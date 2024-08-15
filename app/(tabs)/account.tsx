@@ -37,15 +37,13 @@ const Account = () => {
           </View>
         </View>
         <View className='flex items-center justify-center'>
-          <TextContainer style='mt-5 flex w-[80%] p-4 rounded-xl'>
-            <Text className='text-xl font-psemibold text-center'>Name McName</Text>
+          <TextContainer style='mt-5 flex w-[80%] p-4 rounded-xl' textStyle='text-xl font-psemibold text-center'>
+            Name McName
           </TextContainer>
         </View>
         <View className='flex items-center justify-center'>
-          <TextContainer style='mt-5 flex w-[80%] p-4 rounded-xl'>
-            <Text className='text-lg font-pregular text-center'>
-              Hello! My name is Name McName and I love this app! You should try it too!
-            </Text>
+          <TextContainer style='mt-5 flex w-[80%] p-4 rounded-xl' textStyle='text-lg font-pregular text-center'>
+            Hello! My name is Name McName and I love this app! You should try it too!
           </TextContainer>
         </View>
     </PageView>

@@ -23,8 +23,8 @@ const Home = () => {
           />
         </View>
 
-        <View className='flex-row space-x-4 border-y-4 border-primary-600 p-5'>
-          <Pressable className='flex-[0.2] items-center justify-center'
+        <View className='flex-row justify-between space-x-4 border-y-4 border-primary-600 p-5'>
+          <Pressable className='items-center justify-center'
             onPress={() => console.log("Create a Conversation pressed")}
           >
             <View className='p-6 border rounded-2xl'>
@@ -34,7 +34,7 @@ const Home = () => {
               />
             </View>
           </Pressable>
-          <View className='justify-center flex-[0.8] text-center'>
+          <View className='justify-center text-center'>
             <Text className='text-3xl font-bold text-primary-600'>
               Create a New Conversation
             </Text>
