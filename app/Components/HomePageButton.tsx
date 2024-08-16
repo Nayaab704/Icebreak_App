@@ -6,13 +6,19 @@ const HomePageButton = ({
   image,
   imgAlt,
   title,
-  styles
+  styles,
+  onPress
 }: {
   image: ImageSourcePropType
   imgAlt: string,
   title: string,
-  styles?: string
+  styles?: string,
+  onPress?: () => void
 }) => {
+
+  const press = onPress ? onPress : () => {
+    console.log(`${title} Pressed`)
+  }
 
   return (
     <View className={`flex flex-row px-3 space-x-4 ${styles ? styles : ""}`}>
@@ -25,7 +31,7 @@ const HomePageButton = ({
         />
       </View>
       <Pressable className='bg-primary-500 rounded-xl p-2 flex-1'
-        onPress={() => console.log(`${title} Pressed`)}
+        onPress={() => press()}
       >
         <View className='flex flex-row space-x-4 items-center justify-evenly w-full row-span-2'>
           <Text className='text-xl flex-1 text-center'>

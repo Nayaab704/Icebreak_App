@@ -4,8 +4,17 @@ import HomePageButton from '../Components/HomePageButton'
 import { icons } from '../../constants'
 import PageView from '../Components/PageView'
 import PageHeader from '../Components/PageHeader'
+import { router } from 'expo-router'
+
 
 const Home = () => {
+
+
+
+  const chatGroupPressed = () => {
+    router.push("/chat")
+  }
+
   return (
     <PageView scroll={true}>
         <PageHeader text='Home'/>
@@ -15,6 +24,7 @@ const Home = () => {
             image={icons.group}
             imgAlt='Group icon'
             styles='mb-8'
+            onPress={chatGroupPressed}
           />
           <HomePageButton
             title='One-One Chat with NAME'
