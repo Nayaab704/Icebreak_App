@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, Pressable } from 'react-native'
+import { View, Text, Image, ScrollView, Pressable, ImageProps } from 'react-native'
 import React from 'react'
 import HomePageButton from '../Components/HomePageButton'
 import { icons } from '../../constants'
