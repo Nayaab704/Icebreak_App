@@ -1,8 +1,9 @@
-import { ResizeMode, Video } from "expo-av"
+import { ResizeMode, Video, Audio } from "expo-av"
 import { useEffect, useRef, useState } from "react"
 import { View, Text, Image, ImageSourcePropType, Modal, TouchableOpacity, ActivityIndicator } from "react-native"
 import * as VideoThumbnails from 'expo-video-thumbnails';
 import { icons } from "../../constants";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export enum Sender {
     USER,
@@ -32,11 +33,27 @@ export const TextMessageBubble = ({
     message: IMessage
 }) => {
     return(
-        <View
-            className={`mb-2 p-3 rounded-lg ${message.sender === Sender.USER ? "bg-blue-500 self-end" : "bg-gray-200 self-start"} max-w-[70%]`}
+        <View 
+            className={`${message.sender === Sender.OTHER ? "flex-row items-center space-x-4" : ""} mb-2`}
         >
-            <Text className={`${message.sender === Sender.USER ? "text-white" : "text-black"}`}>{message.content.text}</Text>
+            <View
+                className={`p-3 rounded-lg ${message.sender === Sender.USER ? "bg-blue-500 self-end" : "bg-gray-200 self-start"} max-w-[70%]`}
+            >
+                <Text className={`${message.sender === Sender.USER ? "text-white" : "text-black"}`}>{message.content.text}</Text>
+            </View>
+        {message.sender === Sender.OTHER &&
+            <TouchableOpacity
+                onPress={() => console.log(`Reply pressed`)}
+            >
+                <Image
+                    source={icons.reply}
+                    resizeMode="contain"
+                    className="w-5 h-5"
+                />
+            </TouchableOpacity>
+        }
         </View>
+        
     )
 }
 
@@ -86,13 +103,16 @@ export const PictureMessageBubble = ({
                 transparent
                 visible={modalVisible}
                 onRequestClose={toggleModal}
+                animationType="slide"
             >
-                <View className="flex-1 justify-center items-center bg-black bg-opacity-75">
-                    <TouchableOpacity onPress={toggleModal} className="absolute top-4 right-4 p-2 z-10">
-                        <Text className="text-white text-lg">Close</Text>
-                    </TouchableOpacity>
-                    <Image source={{ uri: imgUri }} className="w-full h-full" resizeMode="contain" />
-                </View>
+                <SafeAreaView className="justify-center flex-1 bg-primary-300">
+                    <View className="w-full items-center">
+                        <TouchableOpacity onPress={toggleModal} className="bg-primary-600 rounded p-3 mr-4 self-end">
+                            <Text className="text-white text-lg">Close</Text>
+                        </TouchableOpacity>
+                        <Image source={{ uri: imgUri }} className="w-full h-[80%]" resizeMode="contain" />
+                    </View>
+                </SafeAreaView>
             </Modal>
         </View>
     )
@@ -113,6 +133,8 @@ export const VideoMessageBubble = ({
         setModalVisible(!modalVisible);
     };
 
+    const video = useRef<Video>(null)
+
     useEffect(() => {
         const generateThumbnail = async () => {
             setLoading(true)
@@ -129,7 +151,12 @@ export const VideoMessageBubble = ({
             
         }
 
+        const changeAudio = async () => {
+            await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
+        }
+
         generateThumbnail()
+        changeAudio()
 
     }, [])
     
@@ -173,26 +200,33 @@ export const VideoMessageBubble = ({
                 visible={modalVisible}
                 onRequestClose={toggleModal}
             >
-                <View className="flex-1 justify-center items-center bg-black bg-opacity-75">
-                    <TouchableOpacity onPress={toggleModal} className="absolute top-4 right-4 p-2 z-10">
-                        <Text className="text-white text-lg">Close</Text>
-                    </TouchableOpacity>
-                    <Video
-                        className="w-full h-60 rounded-xl mt-3"
-                        source={{uri: videoUri}}
-                        resizeMode={ResizeMode.CONTAIN}
-                        useNativeControls
-                        shouldPlay={true}
-                        onPlaybackStatusUpdate={(status) => {
-                            if(status.isLoaded && status.didJustFinish) {
-                                console.log("Video finished")
-                            }
-                            if('error' in status) {
-                                console.log(status.error)
-                            }
-                        }}
-                    />
-                </View>
+                <SafeAreaView className="flex-1 justify-center items-center bg-primary-300">
+                    <View className="w-full items-center">
+                        <TouchableOpacity onPress={toggleModal} className="bg-primary-600 rounded p-3 mr-4 self-end">
+                            <Text className="text-white text-lg">Close</Text>
+                        </TouchableOpacity>
+                        <Video
+                            className="w-full h-[80%] rounded-xl mt-3"
+                            ref={video}
+                            source={{uri: videoUri}}
+                            resizeMode={ResizeMode.CONTAIN}
+                            useNativeControls
+                            shouldPlay={true}
+                            
+                            onPlaybackStatusUpdate={(status) => {
+                                if(status.isLoaded && status.didJustFinish) {
+                                    console.log("Video finished")
+                                    video.current.playFromPositionAsync(0)
+                                    video.current.pauseAsync()
+                                }
+                                if('error' in status) {
+                                    console.log(status.error)
+                                }
+                            }}
+                        />
+                    </View>
+                    
+                </SafeAreaView>
             </Modal>
         </View>
     )

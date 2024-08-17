@@ -14,6 +14,7 @@ import play from "../assets/icons/play.png";
 import settings from "../assets/icons/settings.png"
 import group from "../assets/icons/group.png"
 import edit from "../assets/icons/edit.png"
+import reply from "../assets/icons/reply.png"
 
 export default {
   play,
@@ -31,5 +32,6 @@ export default {
   eye,
   settings,
   group,
-  edit
+  edit,
+  reply
 };

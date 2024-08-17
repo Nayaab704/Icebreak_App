@@ -37,18 +37,20 @@ const HomePageButton = ({
           <Text className='text-xl flex-1 text-center'>
             {title}
           </Text>
-          <View className='p-4 flex'>
-            <Pressable
+          
+          <Pressable
               onPress={() => console.log("Options pressed")}
+              className='z-10'
             >
+            <View className='p-4 flex'>
               <Image
                 source={icons.menu}
                 alt='Menu icon'
                 resizeMode='contain'
                 tintColor={'black'}
               />
-            </Pressable>
-          </View>
+            </View>
+          </Pressable>
         </View>
       </Pressable>
       
