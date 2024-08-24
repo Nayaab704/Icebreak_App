@@ -1,6 +1,7 @@
 To get started
 
 ```
+cd frontend
 npm i
 npm start
 ```
