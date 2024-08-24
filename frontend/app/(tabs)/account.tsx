@@ -1,11 +1,28 @@
-import { View, Text, Image, Pressable } from 'react-native'
+import { View, Text, Image, Pressable, TouchableOpacity, Alert } from 'react-native'
 import React from 'react'
 import PageView from '../Components/PageView'
 import PageHeader from '../Components/PageHeader'
 import { icons } from '../../constants'
 import TextContainer from '../Components/TextContainer'
+import { useGlobalContext } from '../context/GlobalProvider'
+import { router } from 'expo-router'
+import { removeToken } from '../../lib/authTools'
 
 const Account = () => {
+
+  const {setUser, setIsLoggedIn} = useGlobalContext()
+
+  const logOutPressed = async () => {
+    try {
+      await removeToken()
+      setUser(null)
+      setIsLoggedIn(false)
+      router.replace("/sign-in")
+    } catch (error) {
+      Alert.alert("Error Logging out")
+    }
+  }
+
   return (
     <PageView scroll={true}>
         <View className='w-full'>
@@ -46,6 +63,13 @@ const Account = () => {
             Hello! My name is Name McName and I love this app! You should try it too!
           </TextContainer>
         </View>
+        <TouchableOpacity 
+          className={`bg-primary-600 border rounded-xl mt-4`}
+          onPress={logOutPressed}
+          activeOpacity={0.7}
+        >
+          <Text className={`text-primary font-psemibold text-lg text-center py-4`}>{"Log out"}</Text>
+        </TouchableOpacity>
     </PageView>
   )
 }
