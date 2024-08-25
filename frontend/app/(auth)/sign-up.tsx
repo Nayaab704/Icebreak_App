@@ -3,7 +3,8 @@ import React, { useState } from 'react'
 import { storeToken, validateAge, validateEmail, validatePassword, validateUsername } from '../../lib/authTools'
 import { register } from '../../api/authApi'
 import { useGlobalContext } from '../context/GlobalProvider'
-import { router } from 'expo-router'
+import { Link, router } from 'expo-router'
+import CustomButton from '../Components/CustomButton'
 
 interface ISignUpForm {
   email: string
@@ -40,7 +41,7 @@ const SignUp = () => {
 
       const newUser = await register(email, username, password, age)
       await storeToken(newUser.token)
-      setUser(newUser.id)
+      setUser({id: newUser.id, username: newUser.username})
       setIsLoggedIn(true)
       router.replace('/home')
     } catch (error) {
@@ -86,14 +87,14 @@ const SignUp = () => {
           keyboardType='number-pad'
         />
 
-        <TouchableOpacity 
-          className={`bg-primary-600 border rounded-xl`}
+        <CustomButton
+          text='Sign Up'
           onPress={signUpPressed}
-          activeOpacity={0.7}
-          disabled={isLoading}
-        >
-          <Text className={`text-primary font-psemibold text-lg text-center py-4`}>{"Sign Up"}</Text>
-        </TouchableOpacity>
+        />
+        <View className='justify-center pt-5 flex-row gap-2'>
+          <Text className='text-lg '>Already have an account?</Text>
+          <Link href={"sign-in"} className='text-lg font-psemibold text-primary-600'>Sign In</Link>
+        </View>
       </View>
     </SafeAreaView>
   )

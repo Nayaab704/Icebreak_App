@@ -36,6 +36,7 @@ export const tokenLogin = async (token) => {
     const response = await axios.post(`${API_URL}/verify_token`, {
       token
     })
+    console.log("Response: ", response.data)
     return response.data
   } catch (error) {
     console.log(error)

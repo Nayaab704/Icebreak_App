@@ -1,11 +1,29 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { getToken } from "../../lib/authTools";
 import { tokenLogin } from "../../api/authApi";
 
-const GlobalContext = createContext();
-export const useGlobalContext = () => useContext(GlobalContext)
+interface IGlobalContextType {
+    isLoggedIn: boolean;
+    setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
+    user: {id: string, username: string} | null;
+    setUser: React.Dispatch<React.SetStateAction<{id: string, username: string} | null>>;
+    isLoading: boolean;
+}
 
-const GlobalProvider = ({children}) => {
+interface GlobalProviderProps {
+    children: ReactNode;
+}
+
+const GlobalContext = createContext<IGlobalContextType | undefined>(undefined);
+export const useGlobalContext = () => {
+    const context = useContext(GlobalContext)
+    if(!context) {
+        throw new Error("useGlobalContext must be used within a GlobalProvider")
+    }
+    return context
+}
+
+const GlobalProvider : React.FC<GlobalProviderProps> = ({children}) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false)
     const [user, setUser] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
@@ -18,12 +36,12 @@ const GlobalProvider = ({children}) => {
                 if(token) {
                     const res = await tokenLogin(token)
                     setIsLoggedIn(true)
-                    setUser(res.id)
+                    setUser(res)
                 }
             } catch (error) {
                 console.log("Token validation failed", error)
                 setUser(null)
-            }finally {
+            } finally {
                 setIsLoading(false)
             }
         }

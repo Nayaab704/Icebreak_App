@@ -10,14 +10,16 @@ import { removeToken } from '../../lib/authTools'
 
 const Account = () => {
 
+  const {user} = useGlobalContext()
+
   const {setUser, setIsLoggedIn} = useGlobalContext()
 
   const logOutPressed = async () => {
     try {
       await removeToken()
+      router.replace("/sign-in")
       setUser(null)
       setIsLoggedIn(false)
-      router.replace("/sign-in")
     } catch (error) {
       Alert.alert("Error Logging out")
     }
@@ -55,7 +57,7 @@ const Account = () => {
         </View>
         <View className='flex items-center justify-center'>
           <TextContainer style='mt-5 flex w-[80%] p-4 rounded-xl' textStyle='text-xl font-psemibold text-center'>
-            Name McName
+            {user.username}
           </TextContainer>
         </View>
         <View className='flex items-center justify-center'>

@@ -22,20 +22,17 @@ model User {
   password  String
   isOnline  Boolean   @default(false)
   age       Int
-  Videos    Video[]
-  Messages  Message[]
-  Group     Group?    @relation(fields: [groupId], references: [id])
-  groupId   String?
+  groups    String[]  @default([]) // Array of group IDs
+  Video     Video[]
+  Message   Message[]
 }
 
 model Group {
-  id           String       @id @default(cuid()) @map("_id")
-  users        User[]
-  name         String
-  createdAt    DateTime     @default(now())
-  Messages     Message[]
-  groupTopicId String
-  GroupTopic   GroupTopic[]
+  id        String    @id @default(cuid()) @map("_id")
+  name      String
+  createdAt DateTime  @default(now())
+  users     String[]  @default([]) // Array of user IDs
+  Message   Message[]
 }
 
 model Video {
@@ -52,8 +49,6 @@ model Message {
   id        String   @id @default(cuid()) @map("_id")
   group     Group    @relation(fields: [groupId], references: [id])
   groupId   String
-  topic     Topic    @relation(fields: [topicId], references: [id])
-  topicId   String
   sender    User     @relation(fields: [userId], references: [id])
   userId    String
   content   String
@@ -70,24 +65,4 @@ model Reply {
   messageId String?
   content   String
   createdAt DateTime @default(now())
-}
-
-model Topic {
-  id          String       @id @default(cuid()) @map("_id")
-  title       String
-  description String
-  createdAt   DateTime     @default(now())
-  date        DateTime
-  GroupTopic  GroupTopic[]
-  Messages    Message[]
-}
-
-model GroupTopic {
-  id           String   @id @default(cuid()) @map("_id")
-  groupId      String
-  topic        Topic    @relation(fields: [topicId], references: [id])
-  topicId      String
-  assignedDate DateTime
-  createdAt    DateTime @default(now())
-  Group        Group    @relation(fields: [groupId], references: [id])
 }

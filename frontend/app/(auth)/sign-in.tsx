@@ -4,7 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { login } from '../../api/authApi'
 import { storeToken, validateEmail, validatePassword } from '../../lib/authTools'
 import { useGlobalContext } from '../context/GlobalProvider'
-import { router } from 'expo-router'
+import { Link, router } from 'expo-router'
+import CustomButton from '../Components/CustomButton'
 
 interface ISignInForm {
   email: string
@@ -29,12 +30,11 @@ const SignIn = () => {
       }
 
       const user = await login(email, password)
-      console.log("Logged In: ", user)
       await storeToken(user.token)
-      setUser(user.id)
+      setUser({id: user.id, username: user.username})
       router.replace('/home')
     } catch (error) {
-      
+      console.log("Error in sign-in: ", error)
     } finally {
       setIsLoading(false)
     }
@@ -60,15 +60,14 @@ const SignIn = () => {
           placeholder='Enter your password.'
           secureTextEntry={true}
         />
-
-        <TouchableOpacity 
-          className={`bg-primary-600 border rounded-xl`}
+        <CustomButton
+          text='Sign In'
           onPress={signInPressed}
-          activeOpacity={0.7}
-          disabled={isLoading}
-        >
-          <Text className={`text-primary font-psemibold text-lg text-center py-4`}>{"Sign In"}</Text>
-        </TouchableOpacity>
+        />
+        <View className='justify-center pt-5 flex-row gap-2'>
+          <Text className='text-lg '>Don't have an account?</Text>
+          <Link href={"sign-up"} className='text-lg font-psemibold text-primary-600'>Sign Up</Link>
+        </View>
       </View>
     </SafeAreaView>
   )

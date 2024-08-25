@@ -9,8 +9,6 @@ import { router } from 'expo-router'
 
 const Home = () => {
 
-
-
   const chatGroupPressed = () => {
     router.push("/chat")
   }

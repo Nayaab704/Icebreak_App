@@ -15,6 +15,7 @@ import settings from "../assets/icons/settings.png"
 import group from "../assets/icons/group.png"
 import edit from "../assets/icons/edit.png"
 import reply from "../assets/icons/reply.png"
+import chat from "../assets/icons/chat.png"
 
 export default {
   play,
@@ -33,5 +34,6 @@ export default {
   settings,
   group,
   edit,
-  reply
+  reply,
+  chat
 };

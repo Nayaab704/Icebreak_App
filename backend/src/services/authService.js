@@ -14,6 +14,10 @@ async function registerUser(email, password, age, username) {
       username
       // Other fields...
     },
+    select: {
+      id: true,
+      username: true
+    }
   });
 
   const token = jwt.sign(
@@ -28,7 +32,8 @@ async function registerUser(email, password, age, username) {
 async function loginUser(email, password) {
   // Retrieve the user from the database
   const user = await getUserByEmail(email);
-
+  console.log(password)
+  console.log(user.password)
   if (user) {
     // Compare the entered password with the stored hash
     const isMatch = await bcrypt.compare(password, user.password);
@@ -40,6 +45,7 @@ async function loginUser(email, password) {
         { id: user.id, email: user.email},
         JWT_SECRET
       )
+      delete user.password
       return {...user, token};
     } else {
       // Password does not match
@@ -57,8 +63,13 @@ async function logInUserToken(token) {
   const user = await prisma.user.findUnique({
     where: {
       id: decoded.id
+    },
+    select: {
+      id: true,
+      username: true,
     }
   })
+  console.log(user)
   return user
 }
 
@@ -66,9 +77,13 @@ async function getUserByEmail(email) {
   const user = await prisma.user.findUnique({
     where: {
       email
+    },
+    select: {
+      id: true,
+      username: true,
+      password: true
     }
   })
-  console.log("Found User")
   return user
 }
 
