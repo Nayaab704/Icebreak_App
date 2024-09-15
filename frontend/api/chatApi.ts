@@ -41,3 +41,32 @@ export const getUserGroups = async (userId) => {
         throw error.response.data;
     }
 }
+
+export const getMessagesForGroup = async (groupId) => {
+    try {
+        const response = await axios.post(`${API_URL}/get_messages_for_group`, {
+            groupId
+        })
+        return response.data
+    } catch (error) {
+        console.log(error.message)
+        throw error.response.data
+    }
+}
+
+export const createMessage = async (messageData) => {
+    const {content, url, mediaType, senderId, groupId} = messageData
+    try {
+        const response = await axios.post(`${API_URL}/create_message`, {
+            content,
+            url,
+            mediaType,
+            senderId,
+            groupId
+        })
+        return response.data
+    } catch (error) {
+        console.log(error.message)
+        throw error.response.data
+    }
+}

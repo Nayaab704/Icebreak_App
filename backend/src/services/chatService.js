@@ -32,22 +32,16 @@ async function search_users(username, currentUser, cursor) {
 }
 
 async function create_group(users, name) {
+    
     const newGroup = await prisma.group.create({
         data: {
             name,
-            users
-        }
-    })
-
-    await prisma.user.updateMany({
-        where: {
-            id: {
-                in: users
-            }
-        },
-        data: {
-            groups: {
-                push: newGroup.id
+            userGroups: {
+                create: users.map(userId => ({
+                    user: {
+                        connect: {id: userId}
+                    }
+                }))
             }
         }
     })
@@ -56,23 +50,87 @@ async function create_group(users, name) {
 }
 
 async function get_user_groups(userId) {
-    const groups = await prisma.group.findMany({
-        where: {
-            users: {
-                has: userId
+    
+    const userWithGroups = await prisma.user.findUnique({
+        where: {id: userId},
+        include: {
+            userGroups: {
+                include: {
+                    group: true
+                }
             }
-        },
-        select: {
-            id: true,
-            name: true
         }
     })
 
+    if (userWithGroups === null) {
+        return []
+    }
+
+    const groups = userWithGroups.userGroups.map(userGroup => userGroup.group)
+
     return groups
+}
+
+async function create_message(content, url, mediaType, senderId, groupId) {
+    console.log(groupId)
+    const newMessage = await prisma.message.create({
+        data: {
+            sender: {
+                connect: {id: senderId}
+            },
+            group: {
+                connect: {id: groupId}
+            },
+            content: content || null,
+            video: url !== undefined && mediaType === "VIDEO" ? {
+                create: {
+                    url
+                }
+            } : undefined,
+            url,
+            mediaType
+        } 
+    })
+
+    return newMessage
+}
+
+async function get_messages_for_group(groupId) {
+    try {
+        const messages = await prisma.message.findMany({
+            where: {
+                groupId
+            },
+            select: {
+                id: true,
+                content: true,
+                url: true,
+                mediaType: true,
+                createdAt: true,
+                sender: {
+                    select: {
+                        username: true,
+                        id: true
+                    }
+                }
+            },
+            orderBy: {
+                createdAt: 'desc'
+            },
+            skip: 0, // Can skip messages in future
+            take: 20 // Only take certain amount of messages in case group has many
+        })
+        console.log(messages)
+        return (messages)
+    } catch (error) {
+        console.log("Error getting messages for group:\n", error)
+    }
 }
 
 module.exports = {
     search_users,
     create_group,
-    get_user_groups
+    get_user_groups,
+    create_message,
+    get_messages_for_group
 }

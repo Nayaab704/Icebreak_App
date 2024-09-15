@@ -1,8 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// schema.prisma
 
 generator client {
   provider = "prisma-client-js"
@@ -14,55 +10,69 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(cuid()) @map("_id")
-  email     String    @unique
-  username  String    @unique
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @default(now())
-  password  String
-  isOnline  Boolean   @default(false)
-  age       Int
-  groups    String[]  @default([]) // Array of group IDs
-  Video     Video[]
-  Message   Message[]
+  id         String      @id @default(cuid()) @map("_id")
+  username   String      @unique
+  email      String      @unique
+  password   String
+  userGroups UserGroup[]
+  messages   Message[]
+  replies    Reply[]
 }
 
 model Group {
-  id        String    @id @default(cuid()) @map("_id")
-  name      String
-  createdAt DateTime  @default(now())
-  users     String[]  @default([]) // Array of user IDs
-  Message   Message[]
+  id         String      @id @default(cuid()) @map("_id")
+  name       String
+  userGroups UserGroup[]
+  messages   Message[]
+}
+
+model UserGroup {
+  id        String   @id @default(cuid()) @map("_id")
+  userId    String
+  groupId   String
+  user      User     @relation(fields: [userId], references: [id])
+  group     Group    @relation(fields: [groupId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, groupId]) // Ensures that a user can be in the same group only once
+  @@index([userId]) // Index on userId for fast lookups
+  @@index([groupId]) // Index on groupId for fast lookups
 }
 
 model Video {
   id        String    @id @default(cuid()) @map("_id")
   url       String
   createdAt DateTime  @default(now())
-  uploader  User      @relation(fields: [userId], references: [id])
-  userId    String
-  // Can't read the last attribute in the photo
-  Messages  Message[]
+  messages  Message[]
 }
 
 model Message {
-  id        String   @id @default(cuid()) @map("_id")
-  group     Group    @relation(fields: [groupId], references: [id])
+  id        String    @id @default(cuid()) @map("_id")
+  content   String?
+  url       String?
+  mediaType MediaType?
+  video     Video?    @relation(fields: [videoId], references: [id])
+  videoId   String?
+  sender    User      @relation(fields: [senderId], references: [id])
+  senderId  String
+  group     Group     @relation(fields: [groupId], references: [id])
   groupId   String
-  sender    User     @relation(fields: [userId], references: [id])
-  userId    String
-  content   String
-  // Can't read attribute above videoId
-  video     Video    @relation(fields: [videoId], references: [id])
-  videoId   String
+  createdAt DateTime  @default(now())
   replies   Reply[]
-  createdAt DateTime @default(now())
 }
 
 model Reply {
   id        String   @id @default(cuid()) @map("_id")
-  Message   Message? @relation(fields: [messageId], references: [id])
-  messageId String?
   content   String
+  message   Message  @relation(fields: [messageId], references: [id])
+  messageId String
+  sender    User     @relation(fields: [senderId], references: [id])
+  senderId  String
   createdAt DateTime @default(now())
+}
+
+enum MediaType {
+  TEXT
+  IMAGE
+  VIDEO
 }

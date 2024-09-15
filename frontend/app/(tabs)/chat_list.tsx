@@ -15,11 +15,6 @@ interface IFoundUser {
   username: string
 }
 
-// const testUser = [
-//   {id: "cm08o9d04000113zwqugkfeca", username: "Ashla"}, 
-//   {id: "cm08mdq5i00023jbkzy9coyke", username: "Ashley"}
-// ]
-
 const ChatList = () => {
 
   const {user} = useGlobalContext()
@@ -70,6 +65,7 @@ const ChatList = () => {
   const getUsersGroups = async () => {
     try {
       const groups = await getUserGroups(user.id)
+      console.log(groups)
       setUsersGroups(groups)
     } catch (error) {
       Alert.alert("Error getting groups", error.message)
@@ -88,7 +84,7 @@ const ChatList = () => {
           data={usersGroups}
           keyExtractor={item => item.id}
           renderItem={({item}) => (
-            <ChatCard name={item.name}/>
+            <ChatCard name={item.name} groupId={item.id}/>
           )}
           ListEmptyComponent={() => (
             <Text>Create a Chat!</Text>

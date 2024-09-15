@@ -36,8 +36,33 @@ async function get_user_groups(req, res) {
     }
 }
 
+async function create_message(req, res) {
+    const {content, url, mediaType, senderId, groupId} = req.body
+    const actualMediaType = mediaType ? mediaType : "TEXT"
+    try {
+        const message = await chatService.create_message(content, url, actualMediaType, senderId, groupId)
+        res.status(201).json(message);
+    } catch (error) {
+        console.log("Error: ", error)
+        res.status(400).json({ error: error.message });
+    }
+}
+
+async function get_messages_for_group(req, res) {
+    const {groupId} = req.body
+    try {
+        const messages = await chatService.get_messages_for_group(groupId)
+        res.status(201).json(messages);
+    } catch (error) {
+        console.log("Error: ", error)
+        res.status(400).json({ error: error.message });
+    }
+}
+
 module.exports = {
     search_users,
     create_group,
-    get_user_groups
+    get_user_groups,
+    create_message,
+    get_messages_for_group
 }
