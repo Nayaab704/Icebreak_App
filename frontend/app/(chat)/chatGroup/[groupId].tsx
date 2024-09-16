@@ -4,6 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { createMessage, getMessagesForGroup } from '../../../api/chatApi';
 import { IMessage, PictureMessageBubble, Sender, TextMessageBubble, Type, VideoMessageBubble } from '../../Components/MessageBubbles';
 import { useGlobalContext } from '../../context/GlobalProvider';
+import socket from '../../../api/socket';
 
 export default function Chat() {
 
@@ -15,12 +16,10 @@ export default function Chat() {
 
   // Fetch chat data based on groupId
   useEffect(() => {
-    // Simulate API call to fetch chat data
     const fetchChat = async () => {
       try {
         const fetchedChatData = await getMessagesForGroup(groupId)
         setChatData(fetchedChatData)
-        // console.log(fetchedChatData)
       } catch (error) {
         Alert.alert("Error fetching chat: ", error.message)
       }
@@ -28,6 +27,17 @@ export default function Chat() {
     
     fetchChat();
   }, [groupId]);
+
+  useEffect(() => {
+    socket.on('newMessage', (data) => {
+      console.log("New message received in chat: ", data)
+    })
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [groupId])
+  
 
   // Only support text currently
   const sendPressed = async () => {

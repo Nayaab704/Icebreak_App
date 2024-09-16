@@ -143,7 +143,6 @@ async function get_messages_for_group(groupId) {
             skip: 0, // Can skip messages in future
             take: 20 // Only take certain amount of messages in case group has many
         })
-        console.log(messages)
         return (messages)
     } catch (error) {
         console.log("Error getting messages for group:\n", error)

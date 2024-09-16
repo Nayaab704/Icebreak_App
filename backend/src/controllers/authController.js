@@ -14,6 +14,7 @@ async function register(req, res) {
 
 async function login(req, res) {
   const {email, password} = req.body
+  console.log(email, password)
   try {
     const user = await authService.loginUser(email, password)
     res.status(201).json(user);
