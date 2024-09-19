@@ -14,6 +14,7 @@ model User {
   username   String      @unique
   email      String      @unique
   password   String
+  socketIds  String[]
   userGroups UserGroup[]
   messages   Message[]
   replies    Reply[]
@@ -47,17 +48,17 @@ model Video {
 }
 
 model Message {
-  id        String    @id @default(cuid()) @map("_id")
+  id        String     @id @default(cuid()) @map("_id")
   content   String?
   url       String?
   mediaType MediaType?
-  video     Video?    @relation(fields: [videoId], references: [id])
+  video     Video?     @relation(fields: [videoId], references: [id])
   videoId   String?
-  sender    User      @relation(fields: [senderId], references: [id])
+  sender    User       @relation(fields: [senderId], references: [id])
   senderId  String
-  group     Group     @relation(fields: [groupId], references: [id])
+  group     Group      @relation(fields: [groupId], references: [id])
   groupId   String
-  createdAt DateTime  @default(now())
+  createdAt DateTime   @default(now())
   replies   Reply[]
 }
 

@@ -65,7 +65,6 @@ const ChatList = () => {
   const getUsersGroups = async () => {
     try {
       const groups = await getUserGroups(user.id)
-      console.log(groups)
       setUsersGroups(groups)
     } catch (error) {
       Alert.alert("Error getting groups", error.message)

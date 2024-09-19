@@ -82,8 +82,67 @@ async function getUserByEmail(email) {
   return user
 }
 
+async function getUserById(userId) {
+  try {
+    const user = prisma.user.findUnique({
+      where: {id: userId}
+    })
+    return user
+  } catch (error) {
+    console.log("Error getting user by id: ", error.message)
+  }
+}
+
+async function addSocketId(socketId, userId) {
+  try {
+    const addedSocketId = await prisma.user.update({
+      where: {id: userId},
+      data: {
+        socketIds: {
+          push: socketId
+        }
+      }
+    })
+    return addedSocketId
+  } catch (error) {
+    console.log("Error adding socketId: ", error.message)
+  }
+}
+
+async function removeSocketId(socketId, userId) {
+  try {
+    const socketIds = await getSocketIds(userId)
+    const removedSocketId = await prisma.user.update({
+      where: {id: userId},
+      data: {
+        socketIds: {
+          set: socketIds.filter((id) => id !== socketId)
+        }
+      }
+    })
+    return removedSocketId
+  } catch (error) {
+    console.log("Error deleting socketId: ", error.message)
+  }
+}
+
+async function getSocketIds(userId) {
+  const {socketIds} = await prisma.user.findUnique({
+    where: {id: userId},
+    select: {
+      socketIds: true
+    }
+  })
+
+  return socketIds
+}
+
 module.exports = {
   registerUser,
   loginUser,
-  logInUserToken
+  logInUserToken,
+  getUserById,
+  addSocketId,
+  removeSocketId,
+  getSocketIds
 };

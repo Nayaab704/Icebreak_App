@@ -11,7 +11,7 @@ export default function Chat() {
   const {user} = useGlobalContext()
 
   const { groupId } = useLocalSearchParams();
-  const [chatData, setChatData] = useState(null);
+  const [chatData, setChatData] = useState([]);
   const [inputText, setInputText] = useState('');
 
   // Fetch chat data based on groupId
@@ -19,6 +19,7 @@ export default function Chat() {
     const fetchChat = async () => {
       try {
         const fetchedChatData = await getMessagesForGroup(groupId)
+        console.log(fetchedChatData[0])
         setChatData(fetchedChatData)
       } catch (error) {
         Alert.alert("Error fetching chat: ", error.message)
@@ -26,29 +27,48 @@ export default function Chat() {
     };
     
     fetchChat();
-  }, [groupId]);
+  }, []);
+
+  
 
   useEffect(() => {
-    socket.on('newMessage', (data) => {
-      console.log("New message received in chat: ", data)
-    })
+
+    const handleNewMessage = (data) => {
+      if(data.groupId !== groupId)
+        return
+      console.log("New message received in chat for ", user.username, data)
+      setChatData((prevChatData) => [data, ...prevChatData])
+    }
+
+    socket.on('newMessage', handleNewMessage)
 
     return () => {
-      socket.disconnect();
-    };
-  }, [groupId])
-  
+      socket.off('newMessage', handleNewMessage)
+    }
+  }, [])
 
   // Only support text currently
   const sendPressed = async () => {
     try {
-      const newMessage = await createMessage({
+      const {content, createdAt, id, mediaType, senderId, url, videoId} = await createMessage({
         content: inputText,
         mediaType: "TEXT",
         senderId: user.id,
         groupId
       })
-      console.log(newMessage)
+       const sentMessage = {
+        content,
+        createdAt,
+        id,
+        mediaType,
+        sender: {
+          id: senderId,
+          username: user.username
+        },
+        url,
+        videoId
+      }
+      setChatData((prevChatData) => [sentMessage, ... prevChatData])
     } catch (error) {
       Alert.alert("Error sending message: ", error.message)
     }
