@@ -59,10 +59,22 @@ async function get_messages_for_group(req, res) {
     }
 }
 
+async function get_newest_messages_for_group(req, res) {
+    const {groupId, timestamp} = req.body
+    try {
+        const messages = await chatService.get_newest_messages_for_group(groupId, timestamp)
+        res.status(201).json(messages);
+    } catch (error) {
+        console.log("Error: ", error)
+        res.status(400).json({ error: error.message });
+    }
+}
+
 module.exports = {
     search_users,
     create_group,
     get_user_groups,
     create_message,
-    get_messages_for_group
+    get_messages_for_group,
+    get_newest_messages_for_group
 }

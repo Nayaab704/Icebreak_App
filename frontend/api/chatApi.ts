@@ -54,6 +54,19 @@ export const getMessagesForGroup = async (groupId) => {
     }
 }
 
+export const getNewestMessagesForGroup = async (groupId, timestamp) => {
+    try {
+        const response = await axios.post(`${API_URL}/get_newest_messages_for_group`, {
+            groupId,
+            timestamp
+        })
+        return response.data
+    } catch (error) {
+        console.log(error.message)
+        throw error.response.data
+    }
+}
+
 export const createMessage = async (messageData) => {
     const {content, url, mediaType, senderId, groupId} = messageData
     try {

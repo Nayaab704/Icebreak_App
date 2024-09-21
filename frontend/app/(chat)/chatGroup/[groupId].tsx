@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, Alert, FlatList, KeyboardAvoidingView, Platform, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, ActivityIndicator, Alert, FlatList, KeyboardAvoidingView, Platform, TextInput, TouchableOpacity, Image } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { createMessage, getMessagesForGroup } from '../../../api/chatApi';
+import { createMessage, getMessagesForGroup, getNewestMessagesForGroup } from '../../../api/chatApi';
 import { IMessage, PictureMessageBubble, Sender, TextMessageBubble, Type, VideoMessageBubble } from '../../Components/MessageBubbles';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import socket from '../../../api/socket';
+import { icons } from '../../../constants';
+import { getMessages, storeMessages, updateMessages } from '../../../lib/messageTools';
 
 export default function Chat() {
 
@@ -14,13 +16,26 @@ export default function Chat() {
   const [chatData, setChatData] = useState([]);
   const [inputText, setInputText] = useState('');
 
+  const prevSender = user.username // May use later for displaying messages
+
   // Fetch chat data based on groupId
   useEffect(() => {
     const fetchChat = async () => {
       try {
-        const fetchedChatData = await getMessagesForGroup(groupId)
-        console.log(fetchedChatData[0])
-        setChatData(fetchedChatData)
+        // Get messages in local storage
+        const prevMessages = await getMessages(groupId as string)
+        if (prevMessages && prevMessages !== '[]') {
+          const parsedPrevMessage = JSON.parse(prevMessages)
+          const fetchedChatData = parsedPrevMessage[0].createdAt ? await getNewestMessagesForGroup(groupId, parsedPrevMessage[0].createdAt) : []
+          console.log("Newest messages: ", fetchedChatData)
+          const combinedMessages = [...fetchedChatData, ...parsedPrevMessage]
+          await storeMessages(groupId as string, JSON.stringify(combinedMessages.slice(0, 20)))
+          setChatData(combinedMessages)
+        } else {
+          const fetchedChatData = await getMessagesForGroup(groupId)
+          await storeMessages(groupId as string, JSON.stringify(fetchedChatData))
+          setChatData(fetchedChatData)
+        }
       } catch (error) {
         Alert.alert("Error fetching chat: ", error.message)
       }
@@ -69,6 +84,8 @@ export default function Chat() {
         videoId
       }
       setChatData((prevChatData) => [sentMessage, ... prevChatData])
+      setInputText("")
+      await updateMessages(groupId as string, sentMessage)
     } catch (error) {
       Alert.alert("Error sending message: ", error.message)
     }
@@ -93,7 +110,8 @@ export default function Chat() {
         videoUri: message.url
       },
       type: getType(message.mediaType),
-      sender: message.sender.id === user.id ? Sender.USER : Sender.OTHER
+      sender: message.sender.id === user.id ? Sender.USER : Sender.OTHER,
+      username: message.sender.username
     }
   }
 
@@ -131,6 +149,14 @@ export default function Chat() {
                     />
 
                     <View className="flex-row items-center p-4 border-t mb-2 border-gray-200 justify-end">
+                        <TouchableOpacity>
+                          <Image
+                            source={icons.search}
+                            tintColor={'black'}
+                            resizeMode='contain'
+                            className='scale-50'
+                          />
+                        </TouchableOpacity>
                         <TextInput
                             className="flex-1 p-3 bg-gray-100 rounded-lg"
                             value={inputText}

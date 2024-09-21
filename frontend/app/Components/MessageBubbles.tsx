@@ -1,13 +1,13 @@
 import { ResizeMode, Video, Audio } from "expo-av"
 import { useEffect, useRef, useState } from "react"
-import { View, Text, Image, ImageSourcePropType, Modal, TouchableOpacity, ActivityIndicator } from "react-native"
+import { View, Text, Image, Modal, TouchableOpacity, ActivityIndicator } from "react-native"
 import * as VideoThumbnails from 'expo-video-thumbnails';
 import { icons } from "../../constants";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export enum Sender {
     USER,
-    OTHER
+    OTHER,
 }
 
 export enum Type {
@@ -25,6 +25,7 @@ export interface IMessage {
     }
     type: Type
     sender: Sender
+    username: string
 }
 
 export const TextMessageBubble = ({
@@ -39,6 +40,7 @@ export const TextMessageBubble = ({
             <View
                 className={`p-3 rounded-lg ${message.sender === Sender.USER ? "bg-blue-500 self-end" : "bg-gray-200 self-start"} max-w-[70%]`}
             >
+                {message.sender === Sender.OTHER && <Text>{message.username}</Text>}
                 <Text className={`${message.sender === Sender.USER ? "text-white" : "text-black"}`}>{message.content.text}</Text>
             </View>
         {message.sender === Sender.OTHER &&

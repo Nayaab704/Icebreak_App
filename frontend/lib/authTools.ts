@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 
 export const validateEmail = ( email: string ) => {
@@ -40,5 +41,14 @@ export const removeToken = async () => {
         await SecureStore.deleteItemAsync('userToken')
     } catch (error) {
         console.log("Error removing token")
+    }
+}
+
+export const clearAllStorageOnLogout = async () => {
+    try {
+        await SecureStore.deleteItemAsync('userToken')
+        await AsyncStorage.clear()
+    } catch (error) {
+        console.error('Error clearing Secure Store:', error.message);
     }
 }

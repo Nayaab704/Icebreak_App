@@ -6,7 +6,7 @@ import { icons } from '../../constants'
 import TextContainer from '../Components/TextContainer'
 import { useGlobalContext } from '../context/GlobalProvider'
 import { router } from 'expo-router'
-import { removeToken } from '../../lib/authTools'
+import { clearAllStorageOnLogout, removeToken } from '../../lib/authTools'
 
 const Account = () => {
 
@@ -16,7 +16,7 @@ const Account = () => {
 
   const logOutPressed = async () => {
     try {
-      await removeToken()
+      await clearAllStorageOnLogout()
       router.replace("/sign-in")
       setUser(null)
       setIsLoggedIn(false)

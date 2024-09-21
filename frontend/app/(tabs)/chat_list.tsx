@@ -5,7 +5,7 @@ import PageHeader from '../Components/PageHeader'
 import CustomButton from '../Components/CustomButton'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { createGroup, getUserGroups, searchUsers } from '../../api/chatApi'
-import { Checkbox } from 'react-native-paper'
+import { ActivityIndicator, Checkbox } from 'react-native-paper'
 import UserSearchCard from '../Components/UserSearchCard'
 import { useGlobalContext } from '../context/GlobalProvider'
 import ChatCard from '../Components/ChatCard'
@@ -19,6 +19,7 @@ const ChatList = () => {
 
   const {user} = useGlobalContext()
 
+  const [isLoading, setIsLoading] = useState(false)
   const [showSearchModal, setShowSearchModal] = useState(false)
   const [searchField, setSearchField] = useState("")
   const [groupName, setGroupName] = useState("")
@@ -64,10 +65,13 @@ const ChatList = () => {
 
   const getUsersGroups = async () => {
     try {
+      setIsLoading(true)
       const groups = await getUserGroups(user.id)
       setUsersGroups(groups)
     } catch (error) {
       Alert.alert("Error getting groups", error.message)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -78,17 +82,19 @@ const ChatList = () => {
             text='Create Chat'
             onPress={() => setShowSearchModal(true)}
         />
-        <FlatList
-          className='mt-1'
-          data={usersGroups}
-          keyExtractor={item => item.id}
-          renderItem={({item}) => (
-            <ChatCard name={item.name} groupId={item.id}/>
-          )}
-          ListEmptyComponent={() => (
-            <Text>Create a Chat!</Text>
-          )}
-        />
+        {isLoading ? <ActivityIndicator/> :
+          <FlatList
+            className='mt-1'
+            data={usersGroups}
+            keyExtractor={item => item.id}
+            renderItem={({item}) => (
+              <ChatCard name={item.name} groupId={item.id}/>
+            )}
+            ListEmptyComponent={() => (
+              <Text>Create a Chat!</Text>
+            )}
+          />
+        }
         <Modal
           visible={showSearchModal}
           onRequestClose={() => setShowSearchModal(false)}

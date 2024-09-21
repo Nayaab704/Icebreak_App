@@ -145,7 +145,40 @@ async function get_messages_for_group(groupId) {
         })
         return (messages)
     } catch (error) {
-        console.log("Error getting messages for group:\n", error)
+        console.log("Error getting messages for group:\n", error.message)
+    }
+}
+
+async function get_newest_messages_for_group(groupId, timestamp) {
+    try {
+        const messages = await prisma.message.findMany({
+            where: {
+                groupId,
+                createdAt: {
+                    gt: new Date(timestamp)
+                }
+            },
+            select: {
+                id: true,
+                content: true,
+                url: true,
+                mediaType: true,
+                createdAt: true,
+                sender: {
+                    select: {
+                        username: true,
+                        id: true
+                    }
+                }
+            },
+            orderBy: {
+                createdAt: 'desc'
+            },
+            take: 20
+        })
+        return messages
+    } catch (error) {
+        console.log("Error getting newest messages: ", error.message)
     }
 }
 
@@ -155,5 +188,6 @@ module.exports = {
     get_user_groups,
     get_group_members_minus_current_user,
     create_message,
-    get_messages_for_group
+    get_messages_for_group,
+    get_newest_messages_for_group
 }
