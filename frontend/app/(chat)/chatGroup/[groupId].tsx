@@ -9,6 +9,7 @@ import { icons } from '../../../constants';
 import { getMessages, storeMessages, updateMessages } from '../../../lib/messageTools';
 
 export default function Chat() {
+  
 
   const {user} = useGlobalContext()
 
@@ -27,7 +28,6 @@ export default function Chat() {
         if (prevMessages && prevMessages !== '[]') {
           const parsedPrevMessage = JSON.parse(prevMessages)
           const fetchedChatData = parsedPrevMessage[0].createdAt ? await getNewestMessagesForGroup(groupId, parsedPrevMessage[0].createdAt) : []
-          console.log("Newest messages: ", fetchedChatData)
           const combinedMessages = [...fetchedChatData, ...parsedPrevMessage]
           await storeMessages(groupId as string, JSON.stringify(combinedMessages.slice(0, 20)))
           setChatData(combinedMessages)
@@ -51,7 +51,6 @@ export default function Chat() {
     const handleNewMessage = (data) => {
       if(data.groupId !== groupId)
         return
-      console.log("New message received in chat for ", user.username, data)
       setChatData((prevChatData) => [data, ...prevChatData])
     }
 
@@ -65,6 +64,7 @@ export default function Chat() {
   // Only support text currently
   const sendPressed = async () => {
     try {
+      if(!inputText) return
       const {content, createdAt, id, mediaType, senderId, url, videoId} = await createMessage({
         content: inputText,
         mediaType: "TEXT",
@@ -148,13 +148,14 @@ export default function Chat() {
                         renderItem={({item}) => generateChatBubble(item)}
                     />
 
-                    <View className="flex-row items-center p-4 border-t mb-2 border-gray-200 justify-end">
-                        <TouchableOpacity>
+                    {/* <View className="flex-row items-center justify-evenly p-4 border-t mb-2 border-gray-200"> */}
+                    <View className='py-2 px-1 flex-row justify-evenly items-center'>
+                        <TouchableOpacity className='scale-50 flex justify-center'>
                           <Image
-                            source={icons.search}
+                            source={icons.plus}
                             tintColor={'black'}
                             resizeMode='contain'
-                            className='scale-50'
+                            
                           />
                         </TouchableOpacity>
                         <TextInput
@@ -162,8 +163,9 @@ export default function Chat() {
                             value={inputText}
                             onChangeText={setInputText}
                             placeholder="Type a message..."
+                            multiline={true}
                         />
-                        <TouchableOpacity onPress={() => sendPressed()} className="ml-2 p-3 bg-blue-500 rounded-lg">
+                        <TouchableOpacity onPress={() => sendPressed()} className="flex=[0.1] ml-2 p-3 bg-blue-500 rounded-lg">
                             <Text className="text-white">Send</Text>
                         </TouchableOpacity>
                     </View>
