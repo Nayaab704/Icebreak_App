@@ -28,7 +28,7 @@ const SignIn = () => {
       if(!validateEmail(email)){
         throw new Error("Invalid email.")
       }
-
+      
       const user = await login(email, password)
       await storeToken(user.token)
       setUser({id: user.id, username: user.username})

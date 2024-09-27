@@ -1,6 +1,7 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { getToken } from "../../lib/authTools";
 import { tokenLogin } from "../../api/authApi";
+import socket, { disconnectSocket, joinGroup, leaveGroup } from "../../api/socket";
 
 interface IGlobalContextType {
     isLoggedIn: boolean;
@@ -48,6 +49,16 @@ const GlobalProvider : React.FC<GlobalProviderProps> = ({children}) => {
 
         getCurrentUser()
     }, [])
+
+    useEffect(() => {
+        if(user) {
+            socket.connect()
+            joinGroup(user.id)
+        } else {
+            leaveGroup()
+            socket.disconnect()
+        }
+    }, [user])
 
     return(
         <GlobalContext.Provider
