@@ -1,14 +1,13 @@
 import { Stack } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import React from 'react'
-import { View, Text } from 'react-native'
 
 function ChatLayout() {
     return (
         <>
           <Stack>
             <Stack.Screen
-              name='chat'
+              name='chatGroup/[groupId]'
               options={{
                 headerShown: true,
                 headerTitle: 'Chat',

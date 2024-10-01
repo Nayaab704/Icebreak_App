@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, Alert, FlatList, KeyboardAvoidingView, Platform, TextInput, TouchableOpacity, Image } from 'react-native';
+import { View, Text, ActivityIndicator, Alert, FlatList, KeyboardAvoidingView, Platform, TextInput, TouchableOpacity, Image, Modal } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { createMessage, getMessagesForGroup, getNewestMessagesForGroup } from '../../../api/chatApi';
 import { IMessage, PictureMessageBubble, Sender, TextMessageBubble, Type, VideoMessageBubble } from '../../Components/MessageBubbles';
@@ -7,6 +7,7 @@ import { useGlobalContext } from '../../context/GlobalProvider';
 import socket from '../../../api/socket';
 import { icons } from '../../../constants';
 import { getMessages, storeMessages, updateMessages } from '../../../lib/messageTools';
+import Camera from '../../Components/Camera/Camera';
 
 export default function Chat() {
   
@@ -16,6 +17,7 @@ export default function Chat() {
   const { groupId } = useLocalSearchParams();
   const [chatData, setChatData] = useState([]);
   const [inputText, setInputText] = useState('');
+  const [showCamera, setShowCamera] = useState(false)
 
   const prevSender = user.username // May use later for displaying messages
 
@@ -43,8 +45,6 @@ export default function Chat() {
     
     fetchChat();
   }, []);
-
-  
 
   useEffect(() => {
 
@@ -133,43 +133,49 @@ export default function Chat() {
 
   return (
     <KeyboardAvoidingView 
-            className='flex-1'
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
-        >
-                <View className="flex-1 justify-start bg-white">
-                    <FlatList
-                        inverted
-                        contentContainerStyle={{
-                            padding: 16
-                        }}
-                        data={chatData}
-                        keyExtractor={(item) => item.id}
-                        renderItem={({item}) => generateChatBubble(item)}
-                    />
+      className='flex-1'
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
+    >
+      <View className="flex-1 justify-start bg-white">
+        <FlatList
+            inverted
+            contentContainerStyle={{
+                padding: 16
+            }}
+            data={chatData}
+            keyExtractor={(item) => item.id}
+            renderItem={({item}) => generateChatBubble(item)}
+        />
 
-                    {/* <View className="flex-row items-center justify-evenly p-4 border-t mb-2 border-gray-200"> */}
-                    <View className='py-2 px-1 flex-row justify-evenly items-center'>
-                        <TouchableOpacity className='scale-50 flex justify-center'>
-                          <Image
-                            source={icons.plus}
-                            tintColor={'black'}
-                            resizeMode='contain'
-                            
-                          />
-                        </TouchableOpacity>
-                        <TextInput
-                            className="flex-1 p-3 bg-gray-100 rounded-lg"
-                            value={inputText}
-                            onChangeText={setInputText}
-                            placeholder="Type a message..."
-                            multiline={true}
-                        />
-                        <TouchableOpacity onPress={() => sendPressed()} className="flex=[0.1] ml-2 p-3 bg-blue-500 rounded-lg">
-                            <Text className="text-white">Send</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-        </KeyboardAvoidingView>
+        {/* <View className="flex-row items-center justify-evenly p-4 border-t mb-2 border-gray-200"> */}
+        <View className='py-2 px-1 flex-row justify-evenly items-center'>
+            <TouchableOpacity className='scale-50 flex justify-center' onPress={() => setShowCamera(true)}>
+              <Image
+                source={icons.plus}
+                tintColor={'black'}
+                resizeMode='contain'
+              />
+            </TouchableOpacity>
+            <TextInput
+                className="flex-1 p-3 bg-gray-100 rounded-lg"
+                value={inputText}
+                onChangeText={setInputText}
+                placeholder="Type a message..."
+                multiline={true}
+            />
+            <TouchableOpacity onPress={() => sendPressed()} className="flex=[0.1] ml-2 p-3 bg-blue-500 rounded-lg">
+                <Text className="text-white">Send</Text>
+            </TouchableOpacity>
+        </View>
+      </View>
+      <Modal
+        visible={showCamera}
+        onRequestClose={() => setShowCamera(false)}
+        animationType='slide'
+      >
+        <Camera/>
+      </Modal>
+    </KeyboardAvoidingView>
   );
 }
