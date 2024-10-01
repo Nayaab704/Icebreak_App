@@ -8,6 +8,7 @@ const videoRoutes = require('./routes/videoRoutes')
 const chatRoutes = require('./routes/chatRoutes');
 const { get_group_members_minus_current_user } = require('./services/chatService');
 const { addSocketId, removeSocketId, getUserById, getSocketIds } = require('./services/authService');
+require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
@@ -25,6 +26,8 @@ app.use('/api/chat', chatRoutes)
 var connectedUsers = new Map()
 
 const PORT = process.env.PORT || 5000;
+
+console.log("PORT: ", PORT)
 
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

@@ -1,16 +1,13 @@
 import { View, Text, Alert } from 'react-native'
-import React, { useEffect } from 'react'
-import { CameraMode, CameraView, FlashMode, useCameraPermissions, useMicrophonePermissions } from 'expo-camera'
+import React, { useRef } from 'react'
+import { CameraMode, CameraView, FlashMode } from 'expo-camera'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import CameraTools from './CameraTools'
 import MainRowActions from './MainRowActions'
 import BottomRowTools from './BottomRowTools'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import { usePermissions } from 'expo-media-library'
-import { ActivityIndicator, Button } from 'react-native-paper'
 
 export default function Camera() {
-    const cameraRef = React.useRef<CameraView>(null)
+    const cameraRef = useRef(null)
     const [cameraMode, setCameraMode] = React.useState<CameraMode>("picture")
     const [qrCodeDetected, setQrCodeDetected] = React.useState<string>("")
     const [isBrowsing, setIsBrowsing] = React.useState<boolean>(false)
@@ -23,50 +20,7 @@ export default function Camera() {
     const [picture, setPicture] = React.useState<string>("")
     const [video, setVideo] = React.useState<string>(""); 
 
-    const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
-
-    /*
-        Ask Permissions to use Camera, Microphone, and Library
-    */
-
-    const [cameraPermissions, requestCameraPermissions] = useCameraPermissions()
-    const [microphonePermissions, requestMicrophonePermissions] = useMicrophonePermissions()
-    const [mediaLibraryPermissions, requestMediaLibraryPermissions] = usePermissions()
-
-    // if(!cameraPermissions || !microphonePermissions || !mediaLibraryPermissions) {
-    //     return (
-    //         <ActivityIndicator/>
-    //     )
-    // }
-
-    async function requestAllPermissions() {
-        const cameraStatus = await requestCameraPermissions()
-        if(!cameraStatus.granted) {
-        Alert.alert('Error', "Camera permissions is required")
-        return false
-        }
-        const microphoneStatus = await requestMicrophonePermissions()
-        if(!microphoneStatus.granted) {
-        Alert.alert('Error', "Microphone permissions is required")
-        return false
-        }
-        const mediaLibraryStatus = await requestMediaLibraryPermissions()
-        if(!mediaLibraryStatus.granted) {
-        Alert.alert('Error', "Media library permissions is required")
-        return false
-        }
-        await AsyncStorage.setItem('hasOpened', "true")
-        return true
-    }
-
-    useEffect(() => {
-        const checkPermissions = async () => {
-            if(!cameraPermissions.granted || !microphonePermissions.granted || !mediaLibraryPermissions.granted) {
-                await requestAllPermissions()
-            }
-        }
-        checkPermissions()
-    }, [])
+    // const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
     async function toggleRecord() {
         if(isRecording) {
@@ -111,15 +65,6 @@ export default function Camera() {
 //     }
 //   }
 
-    // if(!cameraPermissions.granted || !microphonePermissions.granted || !mediaLibraryPermissions.granted) {
-    //     return (
-    //         <SafeAreaView>
-    //             <Text>We require permission to use your camera, microphone, and media library to use this app.</Text>
-    //             <Button onPress={async () => await requestAllPermissions()}>Continue</Button>
-    //         </SafeAreaView>
-    //     )
-    // }
-
     if(isBrowsing) return <></>
 //   if(picture) return <PictureView picture={picture} setPicture={setPicture}/>
 //   if(video) return <VideoViewComponent video={video} setVideo={setVideo}/>
@@ -135,7 +80,7 @@ export default function Camera() {
             enableTorch={cameraTorch}
             facing={cameraFacing}
             barcodeScannerSettings={{
-            barcodeTypes: ["qr"]
+                barcodeTypes: ["qr"]
             }}
             // onBarcodeScanned={handleBarCodeScanned}
         >
@@ -153,7 +98,8 @@ export default function Camera() {
                 />
                 <MainRowActions
                 cameraMode={cameraMode}
-                handleTakePicture={cameraMode === 'picture' ? handleTakePicture : toggleRecord}
+                // handleTakePicture={cameraMode === 'picture' ? handleTakePicture : toggleRecord}
+                handleTakePicture={() => {}}
                 isRecording={isRecording}
                 />
                 <BottomRowTools setCameraMode={setCameraMode} cameraMode={cameraMode}/>

@@ -63,7 +63,7 @@ export default function MainRowActions({
             </TouchableOpacity>
             <ScrollView horizontal contentContainerStyle={{gap: 5}} showsHorizontalScrollIndicator={false}>
                 {[0, 1, 2, 3].map(item => (
-                    <FontAwesome6 name="face-grin-wide" size={40} color="white"/>
+                    <FontAwesome6 key={item + "FontAwesome"} name="face-grin-wide" size={40} color="white"/>
                 ))}
             </ScrollView>
         </View>

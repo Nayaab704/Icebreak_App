@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, ActivityIndicator, Alert, FlatList, KeyboardAvoidingView, Platform, TextInput, TouchableOpacity, Image, Modal } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { createMessage, getMessagesForGroup, getNewestMessagesForGroup } from '../../../api/chatApi';
@@ -8,6 +8,9 @@ import socket from '../../../api/socket';
 import { icons } from '../../../constants';
 import { getMessages, storeMessages, updateMessages } from '../../../lib/messageTools';
 import Camera from '../../Components/Camera/Camera';
+import { useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
+import { usePermissions } from 'expo-media-library';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Chat() {
   
@@ -18,6 +21,33 @@ export default function Chat() {
   const [chatData, setChatData] = useState([]);
   const [inputText, setInputText] = useState('');
   const [showCamera, setShowCamera] = useState(false)
+
+  /*
+      Ask Permissions to use Camera, Microphone, and Library
+  */
+  const [cameraPermissions, requestCameraPermissions] = useCameraPermissions()
+  const [microphonePermissions, requestMicrophonePermissions] = useMicrophonePermissions()
+  const [mediaLibraryPermissions, requestMediaLibraryPermissions] = usePermissions()
+
+  async function requestAllPermissions() {
+      const cameraStatus = await requestCameraPermissions()
+      if(!cameraStatus.granted) {
+      Alert.alert('Error', "Camera permissions is required")
+      return false
+      }
+      const microphoneStatus = await requestMicrophonePermissions()
+      if(!microphoneStatus.granted) {
+      Alert.alert('Error', "Microphone permissions is required")
+      return false
+      }
+      const mediaLibraryStatus = await requestMediaLibraryPermissions()
+      if(!mediaLibraryStatus.granted) {
+      Alert.alert('Error', "Media library permissions is required")
+      return false
+      }
+      await AsyncStorage.setItem('hasOpened', "true")
+      return true
+  }
 
   const prevSender = user.username // May use later for displaying messages
 
@@ -60,6 +90,17 @@ export default function Chat() {
       socket.off('newMessage', handleNewMessage)
     }
   }, [])
+
+  const openCamera = async () => {
+    if(!cameraPermissions.granted || !microphonePermissions.granted || !mediaLibraryPermissions.granted) {
+      const permissionsGiven = await requestAllPermissions()
+      console.log("Permission not granted!")
+      setShowCamera(permissionsGiven)
+    } else {
+      setShowCamera(true)
+      console.log("Permission granted")
+    }
+  }
 
   // Only support text currently
   const sendPressed = async () => {
@@ -150,7 +191,7 @@ export default function Chat() {
 
         {/* <View className="flex-row items-center justify-evenly p-4 border-t mb-2 border-gray-200"> */}
         <View className='py-2 px-1 flex-row justify-evenly items-center'>
-            <TouchableOpacity className='scale-50 flex justify-center' onPress={() => setShowCamera(true)}>
+            <TouchableOpacity className='scale-50 flex justify-center' onPress={openCamera}>
               <Image
                 source={icons.plus}
                 tintColor={'black'}
