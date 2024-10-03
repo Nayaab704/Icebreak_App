@@ -13,6 +13,7 @@ interface IconButtonProps {
     onPress?: () => void
     width?: number
     height?: number
+    size?: number
 }
 
 export default function IconButton({
@@ -20,7 +21,8 @@ export default function IconButton({
     containerStyles,
     onPress,
     width,
-    height
+    height,
+    size
 }: IconButtonProps) {
 
     return (
@@ -30,11 +32,11 @@ export default function IconButton({
                 backgroundColor: "#00000050",
                 padding: CONTAINER_PADDING,
                 borderRadius: (CONTAINER_WIDTH + CONTAINER_PADDING * 2),
-                width: CONTAINER_WIDTH
+                // width: CONTAINER_WIDTH
             }, containerStyles]}
         >
             <Ionicons 
-                size={ICON_SIZE}
+                size={size ? size : ICON_SIZE}
                 name={iconName}
                 color={"white"}
             />

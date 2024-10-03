@@ -11,6 +11,7 @@ import Camera from '../../Components/Camera/Camera';
 import { useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
 import { usePermissions } from 'expo-media-library';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Chat() {
   
@@ -215,7 +216,7 @@ export default function Chat() {
         onRequestClose={() => setShowCamera(false)}
         animationType='slide'
       >
-        <Camera/>
+        <Camera showCamera={setShowCamera}/>
       </Modal>
     </KeyboardAvoidingView>
   );
