@@ -17,20 +17,22 @@ export default function BottomRowTools({
       <Link href={"/media-library"} asChild>
         <IconButton iconName="library" />
       </Link>
-      <View style={styles.directionRowItemsCenter}>
+      <View style={{...styles.directionRowItemsCenter , backgroundColor: "transparent"}}>
         <TouchableOpacity onPress={() => setCameraMode("picture")}>
           <Text
             style={{
               fontWeight: cameraMode === "picture" ? "bold" : "100",
+              fontSize: 20
             }}
           >
-            Snap
+            Picture
           </Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => setCameraMode("video")}>
           <Text
             style={{
               fontWeight: cameraMode === "video" ? "bold" : "100",
+              fontSize: 20,
             }}
           >
             Video
@@ -48,6 +50,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
+    backgroundColor: "rgba(255,255,255,0.5)",
+    paddingHorizontal: 8,
+    paddingVertical: 3
   },
   bottomContainer: {
     width: "100%",

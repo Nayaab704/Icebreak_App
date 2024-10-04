@@ -1,14 +1,15 @@
 import { View, Text, Alert, LogBox } from 'react-native'
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { CameraMode, CameraView, FlashMode } from 'expo-camera'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import CameraTools from './CameraTools'
 import MainRowActions from './MainRowActions'
 import BottomRowTools from './BottomRowTools'
-import {Ionicons} from "@expo/vector-icons"
+import { Ionicons } from "@expo/vector-icons"
 import IconButton from './IconButton'
 import PictureView from './PictureView'
 import VideoViewComponent from './VideoView'
+import { GestureEvent, GestureHandlerRootView, HandlerStateChangeEvent, PinchGestureHandler, PinchGestureHandlerEventPayload, State } from 'react-native-gesture-handler'
 
 interface CameraProps {
     showCamera: React.Dispatch<React.SetStateAction<boolean>>
@@ -16,13 +17,15 @@ interface CameraProps {
 
 export default function Camera({
     showCamera
-} : CameraProps) {
+}: CameraProps) {
+
+    const CAMERA_RATIO = 100
+
     const cameraRef = useRef<CameraView>(null)
     // const [cameraRef, setCameraRef] = useState(null)
     const [cameraMode, setCameraMode] = useState<CameraMode>("picture")
     const [qrCodeDetected, setQrCodeDetected] = useState<string>("")
     const [isBrowsing, setIsBrowsing] = useState<boolean>(false)
-    const [cameraTorch, setCameraTorch] = useState<boolean>(false)
     const [cameraFlash, setCameraFlash] = useState<FlashMode>('off')
     const [cameraFacing, setCameraFacing] = useState<"front" | "back">('back')
     const [cameraZoom, setCameraZoom] = useState<number>(0)
@@ -32,6 +35,8 @@ export default function Camera({
     const [video, setVideo] = useState<string>("");
 
     const insets = useSafeAreaInsets()
+
+    const trueCameraZoom = () => cameraZoom * CAMERA_RATIO
 
     // const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -46,7 +51,7 @@ export default function Camera({
 
 
     async function toggleRecord() {
-        if(isRecording) {
+        if (isRecording) {
             cameraRef.current?.stopRecording()
             setIsRecording(false)
         } else {
@@ -64,104 +69,112 @@ export default function Camera({
         setPicture(response!.uri)
     }
 
-//   async function handleOpenQRCode() {
-//     setIsBrowsing(true)
-//     const browserResult = await WebBrowser.openBrowserAsync(qrCodeDetected, {
-//       presentationStyle: WebBrowser.WebBrowserPresentationStyle.FORM_SHEET
-//     })
-//     if(browserResult.type === 'cancel') {
-//       setIsBrowsing(false)
-//     }
-//   }
+    const handlePinch = async (event: GestureEvent<PinchGestureHandlerEventPayload>) => {
+        const sensitivity = 0.02 * (1 + trueCameraZoom())
+        const velocity = event.nativeEvent.velocity
 
-//   function handleBarCodeScanned(scanningResult: BarcodeScanningResult) {
-//     if(scanningResult.data) {
-//       console.log(scanningResult.data)
-//       setQrCodeDetected(scanningResult.data)
+        let newZoom = trueCameraZoom() + (velocity * sensitivity)
+        newZoom = Math.max(0, Math.min(newZoom, 5))
 
-//       if(timeoutRef.current) {
-//         clearTimeout(timeoutRef.current)
-//       }
-//       timeoutRef.current = setTimeout(() => {
-//         setQrCodeDetected("")
-//       }, 1000)
-//     }
-//   }
+        setCameraZoom(newZoom / CAMERA_RATIO)
+    }
+
+    const handlePinchStateChange = (event: HandlerStateChangeEvent<PinchGestureHandlerEventPayload>) => {
+        if (event.nativeEvent.state === State.BEGAN) {
+            console.log("START SCALE", (event.nativeEvent.scale - 1) / 10)
+            console.log("START ZOOM: ", cameraZoom) // Only store the current zoom level when the pinch gesture begins
+        }
+    };
+
+    //   async function handleOpenQRCode() {
+    //     setIsBrowsing(true)
+    //     const browserResult = await WebBrowser.openBrowserAsync(qrCodeDetected, {
+    //       presentationStyle: WebBrowser.WebBrowserPresentationStyle.FORM_SHEET
+    //     })
+    //     if(browserResult.type === 'cancel') {
+    //       setIsBrowsing(false)
+    //     }
+    //   }
+
+    //   function handleBarCodeScanned(scanningResult: BarcodeScanningResult) {
+    //     if(scanningResult.data) {
+    //       console.log(scanningResult.data)
+    //       setQrCodeDetected(scanningResult.data)
+
+    //       if(timeoutRef.current) {
+    //         clearTimeout(timeoutRef.current)
+    //       }
+    //       timeoutRef.current = setTimeout(() => {
+    //         setQrCodeDetected("")
+    //       }, 1000)
+    //     }
+    //   }
 
     function closeCamera() {
         cameraRef.current?.pausePreview()
         showCamera(false)
     }
 
-    if(isBrowsing) return <></>
-    if(picture) return <PictureView picture={picture} setPicture={setPicture}/>
-    if(video) return <VideoViewComponent video={video} setVideo={setVideo}/>
+    if (isBrowsing) return <></>
+    if (picture) return <PictureView picture={picture} setPicture={setPicture} />
+    if (video) return <VideoViewComponent video={video} setVideo={setVideo} />
 
     return (
-        <View style={{flex: 1}}>
-            <CameraView
-                style={{
-                    flex: 1,
-                    paddingTop: insets.top,
-                    paddingBottom: insets.bottom,
-                    paddingLeft: insets.left,
-                    paddingRight: insets.right
-                }}
-                ref={cameraRef}
-                mode={cameraMode}
-                zoom={cameraZoom}
-                flash={cameraFlash}
-                enableTorch={cameraTorch}
-                facing={cameraFacing}
-                barcodeScannerSettings={{
-                    barcodeTypes: ["qr"]
-                }}
-                // onBarcodeScanned={handleBarCodeScanned}
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <PinchGestureHandler
+                onGestureEvent={handlePinch}
+                onHandlerStateChange={handlePinchStateChange}
             >
-                <SafeAreaView style={{flex: 1}}>
-                    {/* <Ionicons
-                        name='close-circle-outline'
-                        size={40}
-                        color={"white"}
-                        style={{
+                <CameraView
+                    style={{
+                        flex: 1,
+                        paddingTop: insets.top,
+                        paddingBottom: insets.bottom,
+                        paddingLeft: insets.left,
+                        paddingRight: insets.right
+                    }}
+                    ref={cameraRef}
+                    mode={cameraMode}
+                    zoom={cameraZoom}
+                    flash={cameraFlash}
+                    facing={cameraFacing}
+                    barcodeScannerSettings={{
+                        barcodeTypes: ["qr"]
+                    }}
+                // onBarcodeScanned={handleBarCodeScanned}
+                >
+                    <SafeAreaView style={{ flex: 1 }}>
+                        <View style={{
                             position: "absolute",
                             top: 0,
-                            left: 0
-                        }}
-                        onPress={() => showCamera(false)}
-                    /> */}
-                    <View style={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        zIndex: 50
-                    }}>
-                        <IconButton
-                            iconName='close-circle-outline'
-                            onPress={closeCamera}
-                            size={40}
-                        />
-                    </View>
-                    <View style={{flex: 1}}>
-                        <CameraTools
-                        cameraTorch={cameraTorch}
-                        cameraFlash={cameraFlash}
-                        cameraFacing={cameraFacing}
-                        cameraZoom={cameraZoom}
-                        setCameraTorch={setCameraTorch}
-                        setCameraFlash={setCameraFlash}
-                        setCameraFacing={setCameraFacing}
-                        setCameraZoom={setCameraZoom}
-                        />
-                        <MainRowActions
-                        cameraMode={cameraMode}
-                        handleTakePicture={cameraMode === 'picture' ? handleTakePicture : toggleRecord}
-                        isRecording={isRecording}
-                        />
-                        <BottomRowTools setCameraMode={setCameraMode} cameraMode={cameraMode}/>
-                    </View>
-                </SafeAreaView>
-            </CameraView>
-        </View>
+                            left: 5,
+                            zIndex: 50
+                        }}>
+                            <IconButton
+                                iconName='close-circle-outline'
+                                onPress={closeCamera}
+                                size={40}
+                            />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <CameraTools
+                                cameraFlash={cameraFlash}
+                                cameraFacing={cameraFacing}
+                                cameraZoom={cameraZoom}
+                                setCameraFlash={setCameraFlash}
+                                setCameraFacing={setCameraFacing}
+                                setCameraZoom={setCameraZoom}
+                            />
+                            <MainRowActions
+                                cameraMode={cameraMode}
+                                handleTakePicture={cameraMode === 'picture' ? handleTakePicture : toggleRecord}
+                                isRecording={isRecording}
+                            />
+                            <BottomRowTools setCameraMode={setCameraMode} cameraMode={cameraMode} />
+                        </View>
+                    </SafeAreaView>
+                </CameraView>
+            </PinchGestureHandler>
+        </GestureHandlerRootView>
     )
 }
