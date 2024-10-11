@@ -6,6 +6,7 @@ const { Server } = require('socket.io');
 const authRoutes = require('./routes/authRoutes');
 const videoRoutes = require('./routes/videoRoutes')
 const chatRoutes = require('./routes/chatRoutes');
+const s3Routes = require('./routes/s3Routes')
 const { get_group_members_minus_current_user } = require('./services/chatService');
 const { addSocketId, removeSocketId, getUserById, getSocketIds } = require('./services/authService');
 require('dotenv').config();
@@ -22,6 +23,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/video', videoRoutes)
 app.use('/api/chat', chatRoutes)
+app.use('/api/s3', s3Routes)
 
 var connectedUsers = new Map()
 

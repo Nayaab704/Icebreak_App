@@ -146,6 +146,7 @@ export const VideoMessageBubble = ({
                 });
                 setThumbnailUri(imgUri)
             } catch (error) {
+                setThumbnailUri("")
                 console.log(error)
             } finally {
                 setLoading(false)

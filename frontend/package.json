@@ -9,6 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.670.0",
     "@react-native-async-storage/async-storage": "1.23.1",
     "@react-native-vector-icons/ionicons": "^7.4.0-alpha.27",
     "@types/react": "~18.2.79",

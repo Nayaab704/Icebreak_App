@@ -56,15 +56,23 @@ export default function Camera({
             setIsRecording(false)
         } else {
             setIsRecording(true)
-            const response = await cameraRef.current?.recordAsync({
-                maxDuration: 60
-            })
-            setVideo(response!.uri)
+            try {
+                const response = await cameraRef.current?.recordAsync({
+                    maxDuration: 60
+                })
+                console.log(response)
+                setVideo(response!.uri)
+            } catch (error) {
+                console.log("Error recording video: ", error)
+            }
+
         }
     }
 
     async function handleTakePicture() {
-        const response = await cameraRef.current?.takePictureAsync({})
+        const response = await cameraRef.current?.takePictureAsync({
+
+        })
         console.log(response?.uri)
         setPicture(response!.uri)
     }
@@ -141,6 +149,7 @@ export default function Camera({
                     barcodeScannerSettings={{
                         barcodeTypes: ["qr"]
                     }}
+                    videoQuality='1080p'
                 // onBarcodeScanned={handleBarCodeScanned}
                 >
                     <SafeAreaView style={{ flex: 1 }}>

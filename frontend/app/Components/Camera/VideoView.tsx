@@ -5,6 +5,7 @@ import { saveToLibraryAsync } from "expo-media-library";
 import { shareAsync } from "expo-sharing";
 import { useVideoPlayer, VideoView } from "expo-video";
 import React from "react";
+import { uploadVideoToS3 } from "../../../api/S3";
 
 interface VideoViewComponentProps {
     video: string
@@ -65,6 +66,10 @@ export default function VideoViewComponent({
                 <IconButton
                     iconName="share"
                     onPress={async () => await shareAsync(video)}
+                />
+                <IconButton
+                    iconName="share"
+                    onPress={async () => await uploadVideoToS3(video)}
                 />
             </View>
             <View style={{
