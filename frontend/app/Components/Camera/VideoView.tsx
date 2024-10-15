@@ -3,9 +3,9 @@ import { Alert, View } from "react-native";
 import IconButton from "./IconButton";
 import { saveToLibraryAsync } from "expo-media-library";
 import { shareAsync } from "expo-sharing";
-import { useVideoPlayer, VideoView } from "expo-video";
 import React from "react";
 import { uploadVideoToS3 } from "../../../api/S3";
+import { ResizeMode, Video } from "expo-av";
 
 interface VideoViewComponentProps {
     video: string
@@ -18,23 +18,23 @@ export default function VideoViewComponent({
     setVideo
 } : VideoViewComponentProps) {
 
-    const videoViewRef = React.useRef<VideoView>(null)
-    const [isPlaying, setIsPlaying] = React.useState(true)
-    const player = useVideoPlayer(video, (player) => {
-        player.loop = true
-        player.muted = true
-        player.play()
-    })
+    const videoViewRef = React.useRef<Video>(null)
+    const [isPlaying, setIsPlaying] = React.useState(false)
+    // const player = useVideoPlayer(video, (player) => {
+    //     player.loop = true
+    //     player.muted = true
+    //     player.play()
+    // })
 
-    React.useEffect(() => {
-        const subscription = player.addListener('playingChange', (isPlaying) => {
-            setIsPlaying(isPlaying)
-        })
+    // React.useEffect(() => {
+    //     const subscription = player.addListener('playingChange', (isPlaying) => {
+    //         setIsPlaying(isPlaying)
+    //     })
 
-        return () => {
-            subscription.remove()
-        }
-    }, [player])
+    //     return () => {
+    //         subscription.remove()
+    //     }
+    // }, [player])
 
     return (
         <View>
@@ -53,12 +53,12 @@ export default function VideoViewComponent({
                     }}
                 />
                 <IconButton
-                    iconName={isPlaying ? "play" : "pause"}
+                    iconName={isPlaying ? "pause" : "play"}
                     onPress={() => {
                         if(isPlaying) {
-                            player.pause()
+                            videoViewRef.current.pauseAsync()
                         } else {
-                            player.play()
+                            videoViewRef.current.playAsync()
                         }
                         setIsPlaying(!isPlaying)
                     }}
@@ -84,15 +84,14 @@ export default function VideoViewComponent({
                     onPress={() => setVideo("")}
                 />
             </View>
-            <VideoView
+            <Video
                 ref={videoViewRef}
-                style={{
-                    width: "100%",
-                    height: "100%"
+                source={{
+                    uri: video
                 }}
-                player={player}
-                allowsFullscreen
-                nativeControls
+                resizeMode={ResizeMode.COVER}
+                isLooping
+                className="w-full h-full"
             />
         </View>
     )
