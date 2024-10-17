@@ -11,9 +11,9 @@ export enum Sender {
 }
 
 export enum Type {
-    TEXT,
-    IMAGE,
-    VIDEO
+    TEXT = "TEXT",
+    IMAGE = "IMAGE",
+    VIDEO = "VIDEO"
 }
 
 export interface IMessage {

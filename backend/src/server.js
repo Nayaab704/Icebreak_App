@@ -58,9 +58,9 @@ async function watchMessages() {
         groupMembers.forEach(async (member) => {
           try {
             const userSocketIds = await getSocketIds(member.user.id)
-            console.log("Socket Ids of ", member.user.username)
+            // console.log("Socket Ids of ", member.user.username)
             userSocketIds.forEach((socketId) => {
-              console.log("Sending Message to: ", socketId)
+              // console.log("Sending Message to: ", socketId)
               io.to(socketId).emit('newMessage', {
                 groupId: newMessage.groupId,
                 content: newMessage.content,

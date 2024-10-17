@@ -1,5 +1,6 @@
-import { View, Text, Alert, LogBox } from 'react-native'
-import React, { useEffect, useRef, useState } from 'react'
+import { CLOUD_FRONT } from "@env"
+import { View, Alert, LogBox } from 'react-native'
+import React, { useRef, useState } from 'react'
 import { CameraMode, CameraView, FlashMode } from 'expo-camera'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import CameraTools from './CameraTools'
@@ -10,13 +11,22 @@ import IconButton from './IconButton'
 import PictureView from './PictureView'
 import VideoViewComponent from './VideoView'
 import { GestureEvent, GestureHandlerRootView, HandlerStateChangeEvent, PinchGestureHandler, PinchGestureHandlerEventPayload, State } from 'react-native-gesture-handler'
+import { Type } from '../MessageBubbles'
+import { uploadVideoToS3 } from '../../../api/S3'
+import { useGlobalContext } from '../../context/GlobalProvider'
 
 interface CameraProps {
     showCamera: React.Dispatch<React.SetStateAction<boolean>>
+    inputText: string
+    setInputText: React.Dispatch<React.SetStateAction<string>>
+    sendPressed: (urlP: string | null, mediaTypeP: Type) => Promise<void>
 }
 
 export default function Camera({
-    showCamera
+    showCamera,
+    inputText,
+    setInputText,
+    sendPressed
 }: CameraProps) {
 
     const CAMERA_RATIO = 100
@@ -34,7 +44,10 @@ export default function Camera({
     const [picture, setPicture] = useState<string>("")
     const [video, setVideo] = useState<string>("");
 
+    // https://btywceoleqcoduzeohjn.supabase.co/storage/v1/object/public/videos/videos/Galway.MP4
     const insets = useSafeAreaInsets()
+
+    const {user} = useGlobalContext()
 
     const trueCameraZoom = () => cameraZoom * CAMERA_RATIO
 
@@ -49,6 +62,18 @@ export default function Camera({
         }
     };
 
+    async function sendMedia(mediaType: Type) {
+        try {
+            const videoFileName = await uploadVideoToS3(video, user.username)
+            await sendPressed(`${CLOUD_FRONT}/videos/${videoFileName}`, mediaType)
+            setVideo("")
+            setPicture("")
+            showCamera(false)
+        } catch (error) {
+            Alert.alert("Failed to upload video.", error.message)
+        }
+    }
+
 
     async function toggleRecord() {
         if (isRecording) {
@@ -60,7 +85,6 @@ export default function Camera({
                 const response = await cameraRef.current?.recordAsync({
                     maxDuration: 60
                 })
-                console.log(response)
                 setVideo(response!.uri)
             } catch (error) {
                 console.log("Error recording video: ", error)
@@ -87,11 +111,11 @@ export default function Camera({
         setCameraZoom(newZoom / CAMERA_RATIO)
     }
 
-    const handlePinchStateChange = (event: HandlerStateChangeEvent<PinchGestureHandlerEventPayload>) => {
-        if (event.nativeEvent.state === State.BEGAN) {
-            console.log("START SCALE", (event.nativeEvent.scale - 1) / 10)
-            console.log("START ZOOM: ", cameraZoom) // Only store the current zoom level when the pinch gesture begins
-        }
+    const handlePinchStateChange = (_event: HandlerStateChangeEvent<PinchGestureHandlerEventPayload>) => {
+        // if (event.nativeEvent.state === State.BEGAN) {
+        //     console.log("START SCALE", (event.nativeEvent.scale - 1) / 10)
+        //     console.log("START ZOOM: ", cameraZoom) // Only store the current zoom level when the pinch gesture begins
+        // }
     };
 
     //   async function handleOpenQRCode() {
@@ -125,7 +149,7 @@ export default function Camera({
 
     if (isBrowsing) return <></>
     if (picture) return <PictureView picture={picture} setPicture={setPicture} />
-    if (video) return <VideoViewComponent video={video} setVideo={setVideo} />
+    if (video) return <VideoViewComponent video={video} setVideo={setVideo} inputText={inputText} setInputText={setInputText} sendMedia={sendMedia} />
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>

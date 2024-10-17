@@ -38,6 +38,7 @@ async function get_user_groups(req, res) {
 
 async function create_message(req, res) {
     const {content, url, mediaType, senderId, groupId} = req.body
+    console.log(content, url, mediaType, senderId, groupId)
     const actualMediaType = mediaType ? mediaType : "TEXT"
     try {
         const message = await chatService.create_message(content, url, actualMediaType, senderId, groupId)

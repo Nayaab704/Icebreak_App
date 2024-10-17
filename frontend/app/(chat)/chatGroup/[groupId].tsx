@@ -11,12 +11,11 @@ import Camera from '../../Components/Camera/Camera';
 import { useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
 import { usePermissions } from 'expo-media-library';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Chat() {
-  
 
-  const {user} = useGlobalContext()
+
+  const { user } = useGlobalContext()
 
   const { groupId } = useLocalSearchParams();
   const [chatData, setChatData] = useState([]);
@@ -31,23 +30,23 @@ export default function Chat() {
   const [mediaLibraryPermissions, requestMediaLibraryPermissions] = usePermissions()
 
   async function requestAllPermissions() {
-      const cameraStatus = await requestCameraPermissions()
-      if(!cameraStatus.granted) {
+    const cameraStatus = await requestCameraPermissions()
+    if (!cameraStatus.granted) {
       Alert.alert('Error', "Camera permissions is required")
       return false
-      }
-      const microphoneStatus = await requestMicrophonePermissions()
-      if(!microphoneStatus.granted) {
+    }
+    const microphoneStatus = await requestMicrophonePermissions()
+    if (!microphoneStatus.granted) {
       Alert.alert('Error', "Microphone permissions is required")
       return false
-      }
-      const mediaLibraryStatus = await requestMediaLibraryPermissions()
-      if(!mediaLibraryStatus.granted) {
+    }
+    const mediaLibraryStatus = await requestMediaLibraryPermissions()
+    if (!mediaLibraryStatus.granted) {
       Alert.alert('Error', "Media library permissions is required")
       return false
-      }
-      await AsyncStorage.setItem('hasOpened', "true")
-      return true
+    }
+    await AsyncStorage.setItem('hasOpened', "true")
+    return true
   }
 
   const prevSender = user.username // May use later for displaying messages
@@ -73,14 +72,14 @@ export default function Chat() {
         Alert.alert("Error fetching chat: ", error.message)
       }
     };
-    
+
     fetchChat();
   }, []);
 
   useEffect(() => {
 
     const handleNewMessage = (data) => {
-      if(data.groupId !== groupId)
+      if (data.groupId !== groupId)
         return
       setChatData((prevChatData) => [data, ...prevChatData])
     }
@@ -93,7 +92,7 @@ export default function Chat() {
   }, [])
 
   const openCamera = async () => {
-    if(!cameraPermissions.granted || !microphonePermissions.granted || !mediaLibraryPermissions.granted) {
+    if (!cameraPermissions.granted || !microphonePermissions.granted || !mediaLibraryPermissions.granted) {
       const permissionsGiven = await requestAllPermissions()
       console.log("Permission not granted!")
       setShowCamera(permissionsGiven)
@@ -104,16 +103,16 @@ export default function Chat() {
   }
 
   // Only support text currently
-  const sendPressed = async () => {
+  const sendPressed = async (urlP: string | null, mediaTypeP: Type) => {
     try {
-      if(!inputText) return
-      const {content, createdAt, id, mediaType, senderId, url, videoId} = await createMessage({
+      const { content, createdAt, id, mediaType, senderId, url, videoId } = await createMessage({
         content: inputText,
-        mediaType: "TEXT",
+        mediaType: mediaTypeP as string,
         senderId: user.id,
-        groupId
+        groupId,
+        url: urlP
       })
-       const sentMessage = {
+      const sentMessage = {
         content,
         createdAt,
         id,
@@ -125,7 +124,7 @@ export default function Chat() {
         url,
         videoId
       }
-      setChatData((prevChatData) => [sentMessage, ... prevChatData])
+      setChatData((prevChatData) => [sentMessage, ...prevChatData])
       setInputText("")
       await updateMessages(groupId as string, sentMessage)
     } catch (error) {
@@ -133,8 +132,8 @@ export default function Chat() {
     }
   }
 
-  function getType(type) : Type {
-    if(type === "TEXT" || type === undefined || type === null) {
+  function getType(type): Type {
+    if (type === "TEXT" || type === undefined || type === null) {
       return Type.TEXT
     } else if (type === "IMAGE") {
       return Type.IMAGE
@@ -143,7 +142,7 @@ export default function Chat() {
     }
   }
 
-  function createIMessage(message) : IMessage {
+  function createIMessage(message): IMessage {
     return {
       id: message.id,
       content: {
@@ -158,15 +157,15 @@ export default function Chat() {
   }
 
   const generateChatBubble = (message) => {
-      const iMessage : IMessage = createIMessage(message)
-      
-      if(iMessage.type === Type.TEXT) {
-          return <TextMessageBubble message={iMessage}/>
-      } else if (iMessage.type === Type.IMAGE) {
-          return <PictureMessageBubble message={iMessage}/>
-      } else {
-          return <VideoMessageBubble message={iMessage}/>
-      }
+    const iMessage: IMessage = createIMessage(message)
+
+    if (iMessage.type === Type.TEXT) {
+      return <TextMessageBubble message={iMessage} />
+    } else if (iMessage.type === Type.IMAGE) {
+      return <PictureMessageBubble message={iMessage} />
+    } else {
+      return <VideoMessageBubble message={iMessage} />
+    }
   }
 
   if (!chatData) {
@@ -174,41 +173,41 @@ export default function Chat() {
   }
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       className='flex-1'
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
     >
       <View className="flex-1 justify-start bg-white">
         <FlatList
-            inverted
-            contentContainerStyle={{
-                padding: 16
-            }}
-            data={chatData}
-            keyExtractor={(item) => item.id}
-            renderItem={({item}) => generateChatBubble(item)}
+          inverted
+          contentContainerStyle={{
+            padding: 16
+          }}
+          data={chatData}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => generateChatBubble(item)}
         />
 
         {/* <View className="flex-row items-center justify-evenly p-4 border-t mb-2 border-gray-200"> */}
         <View className='py-2 px-1 flex-row justify-evenly items-center'>
-            <TouchableOpacity className='scale-50 flex justify-center' onPress={openCamera}>
-              <Image
-                source={icons.plus}
-                tintColor={'black'}
-                resizeMode='contain'
-              />
-            </TouchableOpacity>
-            <TextInput
-                className="flex-1 p-3 bg-gray-100 rounded-lg"
-                value={inputText}
-                onChangeText={setInputText}
-                placeholder="Type a message..."
-                multiline={true}
+          <TouchableOpacity className='scale-50 flex justify-center' onPress={openCamera}>
+            <Image
+              source={icons.plus}
+              tintColor={'black'}
+              resizeMode='contain'
             />
-            <TouchableOpacity onPress={() => sendPressed()} className="flex=[0.1] ml-2 p-3 bg-blue-500 rounded-lg">
-                <Text className="text-white">Send</Text>
-            </TouchableOpacity>
+          </TouchableOpacity>
+          <TextInput
+            className="flex-1 p-3 bg-gray-100 rounded-lg"
+            value={inputText}
+            onChangeText={setInputText}
+            placeholder="Type a message..."
+            multiline={true}
+          />
+          <TouchableOpacity onPress={() => sendPressed(null, Type.TEXT)} className="flex=[0.1] ml-2 p-3 bg-blue-500 rounded-lg">
+            <Text className="text-white">Send</Text>
+          </TouchableOpacity>
         </View>
       </View>
       <Modal
@@ -216,7 +215,7 @@ export default function Chat() {
         onRequestClose={() => setShowCamera(false)}
         animationType='slide'
       >
-        <Camera showCamera={setShowCamera}/>
+        <Camera showCamera={setShowCamera} inputText={inputText} setInputText={setInputText} sendPressed={sendPressed} />
       </Modal>
     </KeyboardAvoidingView>
   );

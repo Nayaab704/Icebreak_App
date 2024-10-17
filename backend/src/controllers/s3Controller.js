@@ -14,11 +14,11 @@ const s3Client = new AWS.S3({
 
 async function videoUploadPreSignedUrl(req, res) {
 
-    const { contentType } = req
-
+    const { contentType, username } = req.body
+    const videoFileName = `${username}-${Date.now()}.mp4`
     const params = {
         Bucket: process.env.BUCKET_NAME,
-        Key: `videos/${Date.now()}.mp4`,
+        Key: `videos/${videoFileName}`,
         ContentType: contentType
     }
 
@@ -26,7 +26,7 @@ async function videoUploadPreSignedUrl(req, res) {
 
     try {
         const url = await AWSSigner.getSignedUrl(s3Client, command, { expiresIn: 60 })
-        res.status(201).json(url)
+        res.status(201).json({url, videoFileName})
     } catch (error) {
         console.log("Error getting signed video URL: ", error)
         res.status(400).json({ error: error.message });
