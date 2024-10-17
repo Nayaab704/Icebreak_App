@@ -28,7 +28,11 @@ const GlobalProvider : React.FC<GlobalProviderProps> = ({children}) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false)
     const [user, setUser] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
+    
 
+    /*
+        Attempts to log in a user with a JWT token
+    */
     useEffect(() => {
         const getCurrentUser = async () => {
             try {
@@ -49,6 +53,10 @@ const GlobalProvider : React.FC<GlobalProviderProps> = ({children}) => {
 
         getCurrentUser()
     }, [])
+
+    useEffect(() => {
+
+    })
 
     useEffect(() => {
         if(user) {

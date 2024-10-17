@@ -11,9 +11,9 @@ export enum Sender {
 }
 
 export enum Type {
-    TEXT,
-    IMAGE,
-    VIDEO
+    TEXT = "TEXT",
+    IMAGE = "IMAGE",
+    VIDEO = "VIDEO"
 }
 
 export interface IMessage {
@@ -146,6 +146,7 @@ export const VideoMessageBubble = ({
                 });
                 setThumbnailUri(imgUri)
             } catch (error) {
+                setThumbnailUri("")
                 console.log(error)
             } finally {
                 setLoading(false)
