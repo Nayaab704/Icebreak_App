@@ -82,9 +82,15 @@ export default function Camera({
         } else {
             setIsRecording(true)
             try {
-                const response = await cameraRef.current?.recordAsync({
-                    maxDuration: 60
-                })
+
+                // Set max video length to 60 seconds
+                const timer = setTimeout(() => {
+                    cameraRef.current?.stopRecording();
+                    setIsRecording(false)
+                }, 60000)
+
+                const response = await cameraRef.current?.recordAsync()
+                clearTimeout(timer) // Stop timer if recording stops early
                 setVideo(response!.uri)
             } catch (error) {
                 console.log("Error recording video: ", error)
