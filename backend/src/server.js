@@ -7,8 +7,9 @@ const authRoutes = require('./routes/authRoutes');
 const videoRoutes = require('./routes/videoRoutes')
 const chatRoutes = require('./routes/chatRoutes');
 const s3Routes = require('./routes/s3Routes')
-const { get_group_members_minus_current_user } = require('./services/chatService');
-const { addSocketId, removeSocketId, getUserById, getSocketIds } = require('./services/authService');
+const { get_group_members } = require('./services/chatService');
+const { getUserById } = require('./services/authService');
+// const { io, createIo } = require("./socket")
 require('dotenv').config();
 
 const app = express();
@@ -33,31 +34,33 @@ console.log("PORT: ", PORT)
 
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-  watchMessages()
+  watchSever()
 });
 
-async function watchMessages() {
+async function watchSever() {
   const client = new MongoClient(process.env.DATABASE_URL)
 
   try {
     await client.connect()
     const db = client.db('Prisma')
     const messagesCollection = db.collection('Message')
+    const groupCollection = db.collection("Group")
 
     // Watch the entire Message collection
-    const changeStream = messagesCollection.watch()
+    const messageStream = messagesCollection.watch()
+    const groupStream = groupCollection.watch()
 
-    changeStream.on('change', async (next) => {
+    messageStream.on('change', async (next) => {
       if(next.operationType === 'insert') {
         const newMessage = next.fullDocument
         console.log("New Message Detected: ", newMessage)
 
-        const groupMembers = await get_group_members_minus_current_user(newMessage.groupId, newMessage.senderId)
+        const groupMembers = await get_group_members(newMessage.groupId)
         const {id, username} = await getUserById(newMessage.senderId)
 
         groupMembers.forEach(async (member) => {
           try {
-            const userSocketIds = await getSocketIds(member.user.id)
+            const userSocketIds = connectedUsers.get(member.user.id)
             // console.log("Socket Ids of ", member.user.username)
             userSocketIds.forEach((socketId) => {
               // console.log("Sending Message to: ", socketId)
@@ -75,9 +78,19 @@ async function watchMessages() {
               })
             })
           } catch (error) {
-            console.log("Error getting user socketIds")
+            console.log("Error getting user socketIds", error)
           }
         })
+      }
+    })
+
+    groupStream.on('change', async (next) => {
+      if (next.operationType === 'insert') {
+        const newGroup = next.fullDocument
+        console.log(newGroup)
+        const groupMembers = await get_group_members(newGroup._id)
+        const ids = groupMembers.map(member => member.user.id)
+        emitNewGroup(ids)
       }
     })
   } catch (error) {
@@ -91,8 +104,11 @@ io.on('connection', (socket) => {
   socket.on('joinGroup', async (userId) => {
     console.log("UserId:", userId)
     try {
-      await addSocketId(socket.id, userId)
-      connectedUsers.set(socket.id, userId)
+      // await addSocketId(socket.id, userId)
+      const socketIds = connectedUsers.get(userId)
+      const newIds = socketIds === undefined ? [socket.id] : [...socketIds, socket.id]
+      connectedUsers.set(userId, newIds)
+      socket.userId = userId
       console.log(connectedUsers)
     } catch (error) {
       console.log("Error adding socketId: ", error.message)
@@ -101,24 +117,36 @@ io.on('connection', (socket) => {
 
   socket.on('leaveGroup', async () => {
     console.log("User leaving group")
-    await leaveGroup(socket.id)
+    await leaveGroup(socket.id, socket.userId)
   }) 
 
   socket.on('disconnect', async () => {
     console.log('A user disconnected: ', socket.id)
-    await leaveGroup(socket.id)
+    await leaveGroup(socket.id, socket.userId)
   })
 })
 
-const leaveGroup = async (socketId) => {
+function emitNewGroup(users) {
+  users.forEach(userId => {
+    const socketIds = connectedUsers.get(userId)
+    if(socketIds === undefined) return
+    socketIds.forEach(socketId => {
+      io.to(socketId).emit('newGroup')
+    })
+  })
+}
+
+const leaveGroup = async (socketId, userId) => {
   try {
-    const userId = connectedUsers.get(socketId)
-    connectedUsers.delete(socketId)
-    if(userId) {
-      await removeSocketId(socketId, userId)
+    const userSocketIds = connectedUsers.get(userId)
+    if (userSocketIds === undefined) return
+    const newSocketIds = userSocketIds.filter(thisSocketId => thisSocketId !== socketId)
+    if(newSocketIds.length === 0) {
+      connectedUsers.delete(userId)
+    } else {
+      connectedUsers.set(userId, newSocketIds)
     }
   } catch (error) {
     console.log("Error leaving group: ", error.message)
   }
 }
-

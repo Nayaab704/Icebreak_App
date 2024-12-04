@@ -55,10 +55,6 @@ const GlobalProvider : React.FC<GlobalProviderProps> = ({children}) => {
     }, [])
 
     useEffect(() => {
-
-    })
-
-    useEffect(() => {
         if(user) {
             socket.connect()
             joinGroup(user.id)
@@ -66,6 +62,7 @@ const GlobalProvider : React.FC<GlobalProviderProps> = ({children}) => {
             leaveGroup()
             socket.disconnect()
         }
+
     }, [user])
 
     return(

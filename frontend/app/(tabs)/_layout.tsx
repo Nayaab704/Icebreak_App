@@ -1,18 +1,18 @@
 import { View, Text, Image } from 'react-native'
 import { Tabs, Redirect } from 'expo-router'
 
-import { icons } from '../../constants' 
+import { icons } from '../../constants'
 
-const TabIcon = ({icon, color, name, focused}) => {
+const TabIcon = ({ icon, color, name, focused }) => {
   return (
-    <View className='items-center justify-center gap-2'>
+    <View className='items-center justify-center w-[100] mt-3'>
       <Image
         source={icon}
         resizeMode='contain'
         tintColor={color}
         className='w-6 h-6'
       />
-      <Text className={`${focused ? 'font-semibold' : 'font-pregular'} text-sx`} style={{color: color}}>
+      <Text className={`${focused ? 'font-semibold' : 'font-pregular'} text-sx`} style={{ color: color }}>
         {name}
       </Text>
     </View>
@@ -40,7 +40,7 @@ const TabsLayout = () => {
           options={{
             title: "Home",
             headerShown: false,
-            tabBarIcon: ({color, focused}) => (
+            tabBarIcon: ({ color, focused }) => (
               <TabIcon
                 icon={icons.home}
                 color={color}
@@ -55,7 +55,7 @@ const TabsLayout = () => {
           options={{
             title: "Chat",
             headerShown: false,
-            tabBarIcon: ({color, focused}) => (
+            tabBarIcon: ({ color, focused }) => (
               <TabIcon
                 icon={icons.chat}
                 color={color}
@@ -70,7 +70,7 @@ const TabsLayout = () => {
           options={{
             title: "Account",
             headerShown: false,
-            tabBarIcon: ({color, focused}) => (
+            tabBarIcon: ({ color, focused }) => (
               <TabIcon
                 icon={icons.profile}
                 color={color}
@@ -85,7 +85,7 @@ const TabsLayout = () => {
           options={{
             title: "Settings",
             headerShown: false,
-            tabBarIcon: ({color, focused}) => (
+            tabBarIcon: ({ color, focused }) => (
               <TabIcon
                 icon={icons.settings}
                 color={color}

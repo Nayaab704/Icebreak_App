@@ -89,9 +89,30 @@ async function get_group_members_minus_current_user(groupId, userId) {
         })
         return groupMembers
     } catch (error) {
-        console.log("Error getting group members:\n", error)
+        console.log("Error getting group members (minus user):\n", error)
     }
     
+}
+
+async function get_group_members(groupId) {
+    try {
+        const groupMembers = await prisma.userGroup.findMany({
+            where: {
+                groupId,
+            },
+            select: {
+                user: {
+                    select: {
+                        id: true,
+                        username: true
+                    }
+                }
+            }
+        })
+        return groupMembers
+    } catch (error) {
+        console.log("Error getting group members:\n", error)
+    }
 }
 
 async function create_message(content, url, mediaType, senderId, groupId) {
@@ -187,6 +208,7 @@ module.exports = {
     create_group,
     get_user_groups,
     get_group_members_minus_current_user,
+    get_group_members,
     create_message,
     get_messages_for_group,
     get_newest_messages_for_group

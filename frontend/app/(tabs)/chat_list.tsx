@@ -9,6 +9,7 @@ import { ActivityIndicator, Checkbox } from 'react-native-paper'
 import UserSearchCard from '../Components/UserSearchCard'
 import { useGlobalContext } from '../context/GlobalProvider'
 import ChatCard from '../Components/ChatCard'
+import socket from '../../api/socket'
 
 interface IFoundUser {
   id: string
@@ -42,10 +43,11 @@ const ChatList = () => {
   }, [searchField])
 
   useEffect(() => {
-    getUsersGroups()
+    getUsersGroups(true)
   }, [])
 
   const userSelected = (isChecked: boolean, id: string) => {
+    console.log("Pressed")
     if(isChecked) {
       setSelectedUsers([... selectedUsers, id])
     } else {
@@ -58,14 +60,16 @@ const ChatList = () => {
       await createGroup([...selectedUsers, user.id], groupName)
       setShowSearchModal(false)
       setSearchField("")
+      setGroupName("")
+      setSelectedUsers([])
     } catch (error) {
       Alert.alert("Error creating Group", error.message)
     }
   }
 
-  const getUsersGroups = async () => {
+  const getUsersGroups = async (showLoading : boolean) => {
     try {
-      setIsLoading(true)
+      setIsLoading(showLoading)
       const groups = await getUserGroups(user.id)
       setUsersGroups(groups)
     } catch (error) {
@@ -74,6 +78,15 @@ const ChatList = () => {
       setIsLoading(false)
     }
   }
+
+  useEffect(() => {
+
+    const newGroupCreated = async () => {
+      await getUsersGroups(false)
+    }
+
+    socket.on('newGroup', newGroupCreated)
+  }, [])
 
   return (
     <PageView scroll={false}>

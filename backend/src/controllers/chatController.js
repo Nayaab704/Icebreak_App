@@ -18,6 +18,7 @@ async function create_group(req, res) {
     const {users, name} = req.body
     try {
         const newGroup = await chatService.create_group(users, name)
+        // emitNewGroup(users)
         res.status(201).json(newGroup);
     } catch (error) {
         console.log("Error: ", error)

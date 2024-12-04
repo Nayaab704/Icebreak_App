@@ -18,8 +18,8 @@ export enum Type {
 
 export interface IMessage {
     id: number
-    content : {
-        text? : string
+    content: {
+        text?: string
         imgUri?: string
         videoUri?: string
     }
@@ -30,11 +30,11 @@ export interface IMessage {
 
 export const TextMessageBubble = ({
     message,
-} : {
+}: {
     message: IMessage
 }) => {
-    return(
-        <View 
+    return (
+        <View
             className={`${message.sender === Sender.OTHER ? "flex-row items-center space-x-4" : ""} mb-2`}
         >
             <View
@@ -43,25 +43,25 @@ export const TextMessageBubble = ({
                 {message.sender === Sender.OTHER && <Text>{message.username}</Text>}
                 <Text className={`${message.sender === Sender.USER ? "text-white" : "text-black"}`}>{message.content.text}</Text>
             </View>
-        {message.sender === Sender.OTHER &&
-            <TouchableOpacity
-                onPress={() => console.log(`Reply pressed`)}
-            >
-                <Image
-                    source={icons.reply}
-                    resizeMode="contain"
-                    className="w-5 h-5"
-                />
-            </TouchableOpacity>
-        }
+            {message.sender === Sender.OTHER &&
+                <TouchableOpacity
+                    onPress={() => console.log(`Reply pressed`)}
+                >
+                    <Image
+                        source={icons.reply}
+                        resizeMode="contain"
+                        className="w-5 h-5"
+                    />
+                </TouchableOpacity>
+            }
         </View>
-        
+
     )
 }
 
 export const PictureMessageBubble = ({
     message,
-} : {
+}: {
     message: IMessage
 }) => {
     const [modalVisible, setModalVisible] = useState(false)
@@ -71,7 +71,7 @@ export const PictureMessageBubble = ({
         setModalVisible(!modalVisible);
     };
 
-    const {imgUri, text} = message.content
+    const { imgUri, text } = message.content
 
 
     return (
@@ -81,16 +81,16 @@ export const PictureMessageBubble = ({
             <TouchableOpacity
                 onPress={toggleModal}
             >
-                {imageLoading && 
-                    <ActivityIndicator size={'large'} color={"#0000ff"} 
-                    className="absolute w-[50px] h-[50px]"
+                {imageLoading &&
+                    <ActivityIndicator size={'large'} color={"#0000ff"}
+                        className="absolute w-[50px] h-[50px]"
                         style={{
                             left: '50%',
                             top: '50%',
                             transform: [{ translateX: -25 }, { translateY: -25 }],
-                        }}/>}
+                        }} />}
                 <Image
-                    source={{uri: imgUri}}
+                    source={{ uri: imgUri }}
                     resizeMode="cover"
                     alt={imgUri}
                     className="w-[200] h-[200]"
@@ -98,7 +98,7 @@ export const PictureMessageBubble = ({
                     onLoadEnd={() => setImageLoading(false)}
                     onError={(e) => console.log("Error loading image:", e)}
                 />
-                
+
             </TouchableOpacity>
             {text && <Text className={`${message.sender === Sender.USER ? "text-white" : "text-black"} text-start mt-2 w-full`}>{text}</Text>}
             <Modal
@@ -122,14 +122,14 @@ export const PictureMessageBubble = ({
 
 export const VideoMessageBubble = ({
     message,
-} : {
+}: {
     message: IMessage
 }) => {
     const [modalVisible, setModalVisible] = useState(false)
     const [thumbnailUri, setThumbnailUri] = useState(null)
     const [loading, setLoading] = useState(true)
 
-    const {videoUri, text} = message.content
+    const { videoUri, text } = message.content
 
     const toggleModal = () => {
         setModalVisible(!modalVisible);
@@ -151,7 +151,7 @@ export const VideoMessageBubble = ({
             } finally {
                 setLoading(false)
             }
-            
+
         }
 
         const changeAudio = async () => {
@@ -162,7 +162,7 @@ export const VideoMessageBubble = ({
         changeAudio()
 
     }, [])
-    
+
 
 
     return (
@@ -173,11 +173,11 @@ export const VideoMessageBubble = ({
                 onPress={toggleModal}
             >
                 {loading ? (
-                    <ActivityIndicator size={'large'} color={"#0000ff"} className="h-[200]"/>
+                    <ActivityIndicator size={'large'} color={"#0000ff"} className="h-[200]" />
                 ) : (
                     <View>
                         <Image
-                            source={{uri: thumbnailUri.uri}}
+                            source={{ uri: thumbnailUri.uri }}
                             resizeMode="cover"
                             alt={thumbnailUri.uri}
                             className="w-[200] h-[200]"
@@ -193,9 +193,9 @@ export const VideoMessageBubble = ({
                             }}
                         />
                     </View>
-                    
+
                 )}
-                
+
             </TouchableOpacity>
             {text && <Text className={`${message.sender === Sender.USER ? "text-white" : "text-black"} text-start mt-2 w-full`}>{text}</Text>}
             <Modal
@@ -211,26 +211,28 @@ export const VideoMessageBubble = ({
                         <Video
                             className="w-full h-[80%] rounded-xl mt-3"
                             ref={video}
-                            source={{uri: videoUri}}
+                            source={{ uri: videoUri }}
                             resizeMode={ResizeMode.CONTAIN}
                             useNativeControls
                             shouldPlay={true}
-                            
+
                             onPlaybackStatusUpdate={(status) => {
-                                if(status.isLoaded && status.didJustFinish) {
+                                if (status.isLoaded && status.didJustFinish) {
                                     console.log("Video finished")
                                     video.current.playFromPositionAsync(0)
                                     video.current.pauseAsync()
                                 }
-                                if('error' in status) {
+                                if ('error' in status) {
                                     console.log(status.error)
                                 }
                             }}
                         />
                     </View>
-                    
+
                 </SafeAreaView>
             </Modal>
         </View>
     )
 }
+
+export default TextMessageBubble

@@ -124,7 +124,7 @@ export default function Chat() {
         url,
         videoId
       }
-      setChatData((prevChatData) => [sentMessage, ...prevChatData])
+      // setChatData((prevChatData) => [sentMessage, ...prevChatData])
       setInputText("")
       await updateMessages(groupId as string, sentMessage)
     } catch (error) {

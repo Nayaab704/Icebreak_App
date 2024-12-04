@@ -14,7 +14,6 @@ model User {
   username   String      @unique
   email      String      @unique
   password   String
-  socketIds  String[]
   age        Int
   userGroups UserGroup[]
   messages   Message[]

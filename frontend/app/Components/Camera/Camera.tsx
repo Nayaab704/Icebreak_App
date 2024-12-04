@@ -6,7 +6,6 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import CameraTools from './CameraTools'
 import MainRowActions from './MainRowActions'
 import BottomRowTools from './BottomRowTools'
-import { Ionicons } from "@expo/vector-icons"
 import IconButton from './IconButton'
 import PictureView from './PictureView'
 import VideoViewComponent from './VideoView'
