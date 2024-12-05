@@ -26,13 +26,33 @@ async function videoUploadPreSignedUrl(req, res) {
 
     try {
         const url = await AWSSigner.getSignedUrl(s3Client, command, { expiresIn: 60 })
-        res.status(201).json({url, videoFileName})
+        res.status(201).json({ url, videoFileName })
     } catch (error) {
         console.log("Error getting signed video URL: ", error)
         res.status(400).json({ error: error.message });
     }
 }
 
+async function photoUploadPreSignedUrl(req, res) {
+    const { contentType, username } = req.body
+    const photoFileName = `${username}-${Date.now()}.jpeg`
+    const params = {
+        Bucket: process.env.BUCKET_NAME,
+        Key: `images/${photoFileName}`,
+        ContentType: contentType
+    }
+
+    const command = new AWS.PutObjectCommand(params);
+    try {
+        const url = await AWSSigner.getSignedUrl(s3Client, command, { expiresIn: 60 })
+        res.status(201).json({ url, photoFileName })
+    } catch (error) {
+        console.log("Error getting signed photo URL: ", error)
+        res.status(400).json({ error: error.message });
+    }
+}
+
 module.exports = {
-    videoUploadPreSignedUrl
+    videoUploadPreSignedUrl,
+    photoUploadPreSignedUrl
 }

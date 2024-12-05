@@ -51,19 +51,20 @@ async function watchSever() {
     const groupStream = groupCollection.watch()
 
     messageStream.on('change', async (next) => {
-      if(next.operationType === 'insert') {
+      if (next.operationType === 'insert') {
         const newMessage = next.fullDocument
         console.log("New Message Detected: ", newMessage)
 
         const groupMembers = await get_group_members(newMessage.groupId)
-        const {id, username} = await getUserById(newMessage.senderId)
+        const { id, username } = await getUserById(newMessage.senderId)
 
         groupMembers.forEach(async (member) => {
           try {
             const userSocketIds = connectedUsers.get(member.user.id)
-            // console.log("Socket Ids of ", member.user.username)
+            if (userSocketIds === undefined) {
+              return
+            }
             userSocketIds.forEach((socketId) => {
-              // console.log("Sending Message to: ", socketId)
               io.to(socketId).emit('newMessage', {
                 groupId: newMessage.groupId,
                 content: newMessage.content,
@@ -118,7 +119,7 @@ io.on('connection', (socket) => {
   socket.on('leaveGroup', async () => {
     console.log("User leaving group")
     await leaveGroup(socket.id, socket.userId)
-  }) 
+  })
 
   socket.on('disconnect', async () => {
     console.log('A user disconnected: ', socket.id)
@@ -129,7 +130,7 @@ io.on('connection', (socket) => {
 function emitNewGroup(users) {
   users.forEach(userId => {
     const socketIds = connectedUsers.get(userId)
-    if(socketIds === undefined) return
+    if (socketIds === undefined) return
     socketIds.forEach(socketId => {
       io.to(socketId).emit('newGroup')
     })
@@ -141,7 +142,7 @@ const leaveGroup = async (socketId, userId) => {
     const userSocketIds = connectedUsers.get(userId)
     if (userSocketIds === undefined) return
     const newSocketIds = userSocketIds.filter(thisSocketId => thisSocketId !== socketId)
-    if(newSocketIds.length === 0) {
+    if (newSocketIds.length === 0) {
       connectedUsers.delete(userId)
     } else {
       connectedUsers.set(userId, newSocketIds)

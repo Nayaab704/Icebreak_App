@@ -11,7 +11,7 @@ import PictureView from './PictureView'
 import VideoViewComponent from './VideoView'
 import { GestureEvent, GestureHandlerRootView, HandlerStateChangeEvent, PinchGestureHandler, PinchGestureHandlerEventPayload, State } from 'react-native-gesture-handler'
 import { Type } from '../MessageBubbles'
-import { uploadVideoToS3 } from '../../../api/S3'
+import { uploadPhotoToS3, uploadVideoToS3 } from '../../../api/S3'
 import { useGlobalContext } from '../../context/GlobalProvider'
 
 interface CameraProps {
@@ -46,7 +46,7 @@ export default function Camera({
     // https://btywceoleqcoduzeohjn.supabase.co/storage/v1/object/public/videos/videos/Galway.MP4
     const insets = useSafeAreaInsets()
 
-    const {user} = useGlobalContext()
+    const { user } = useGlobalContext()
 
     const trueCameraZoom = () => cameraZoom * CAMERA_RATIO
 
@@ -62,15 +62,25 @@ export default function Camera({
     };
 
     async function sendMedia(mediaType: Type) {
-        try {
-            const videoFileName = await uploadVideoToS3(video, user.username)
-            await sendPressed(`${CLOUD_FRONT}/videos/${videoFileName}`, mediaType)
-            setVideo("")
-            setPicture("")
-            showCamera(false)
-        } catch (error) {
-            Alert.alert("Failed to upload video.", error.message)
+        if (mediaType === Type.VIDEO) {
+            try {
+                const videoFileName = await uploadVideoToS3(video, user.username)
+                await sendPressed(`${CLOUD_FRONT}/videos/${videoFileName}`, mediaType)
+            } catch (error) {
+                Alert.alert("Failed to upload video.", error.message)
+            }
+        } else if (mediaType === Type.IMAGE) {
+            try {
+                const photoFileName = await uploadPhotoToS3(picture, user.username)
+                console.log("Finished ", photoFileName)
+                await sendPressed(`${CLOUD_FRONT}/images/${photoFileName}`, mediaType)
+            } catch (error) {
+                Alert.alert("Failed to upload photo.", error.message)
+            }
         }
+        setVideo("")
+        setPicture("")
+        showCamera(false)
     }
 
 
@@ -153,7 +163,7 @@ export default function Camera({
     }
 
     if (isBrowsing) return <></>
-    if (picture) return <PictureView picture={picture} setPicture={setPicture} />
+    if (picture) return <PictureView picture={picture} setPicture={setPicture} inputText={inputText} setInputText={setInputText} sendMedia={sendMedia} />
     if (video) return <VideoViewComponent video={video} setVideo={setVideo} inputText={inputText} setInputText={setInputText} sendMedia={sendMedia} />
 
     return (
